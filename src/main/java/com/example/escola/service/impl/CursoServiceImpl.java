@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.escola.dto.AtualizaCursoRequest;
 import com.example.escola.dto.CriaCursoRequest;
+import com.example.escola.exception.BadRequestException;
 import com.example.escola.exception.NotFoundException;
 import com.example.escola.model.Curso;
 import com.example.escola.repository.CursoRepository;
@@ -63,6 +64,10 @@ public class CursoServiceImpl implements CursoService{
 
         if(existeCurso.isEmpty()){
             throw new NotFoundException("Curso não encontrado!");
+        }
+
+        if(!existeCurso.get().getMatriculas().isEmpty()){
+            throw new BadRequestException("Você não pode excluir cursos com matriculas em andamento");
         }
 
         cursoRepository.deleteById(curso_id);

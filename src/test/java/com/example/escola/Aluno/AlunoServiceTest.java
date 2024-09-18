@@ -1,10 +1,12 @@
 package com.example.escola.Aluno;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.DisplayName;
@@ -29,6 +31,25 @@ public class AlunoServiceTest {
 
     @InjectMocks
     private AlunoServiceImpl alunoService;
+
+    @Test
+    @DisplayName("Teste para verificar funcionamento do GetMapping")
+    void deveVerificarORepository(){
+        Aluno aluno1 = new Aluno();
+        aluno1.setNome("Pedro");
+
+        Aluno aluno2 = new Aluno();
+        aluno2.setNome("Lucas");
+
+        when(alunoRepository.findAll())
+                            .thenReturn(List.of(aluno1, aluno2));
+
+        List<Aluno> resultado = alunoService.achaTodosOsAlunos();
+
+        assertNotNull(resultado);
+        assertEquals("Pedro", resultado.get(0).getNome());
+        assertEquals("Lucas", resultado.get(1).getNome());
+    }
 
     @Test
     @DisplayName("Teste para criar novo Aluno")

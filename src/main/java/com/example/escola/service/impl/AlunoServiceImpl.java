@@ -94,6 +94,10 @@ public class AlunoServiceImpl implements AlunoService{
             throw new NotFoundException("Aluno não encontrado!");
         }
 
+        if(!existeAluno.get().getMatriculas().isEmpty()){
+            throw new BadRequestException("Você não pode deletar um aluno com matriculas em andamento");
+        }
+
         alunoRepository.deleteById(aluno_id);
     }
 }

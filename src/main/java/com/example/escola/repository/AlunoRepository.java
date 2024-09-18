@@ -10,5 +10,4 @@ import com.example.escola.model.Aluno;
 @Repository
 public interface AlunoRepository extends JpaRepository<Aluno,Long>{
     Optional<Aluno> findByEmail(String email);
-    Optional<Aluno> findByNome(String nome);
 }

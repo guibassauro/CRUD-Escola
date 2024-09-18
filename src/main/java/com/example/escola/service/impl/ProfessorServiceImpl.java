@@ -41,6 +41,14 @@ public class ProfessorServiceImpl implements ProfessorService{
 
     @Override
     public Professor criaNovoProfessor(CriaProfessorRequest criaProfessor){
+        
+        criaProfessor.getCursos_id().forEach(curso_id -> {
+            Optional<Curso> existeCurso = cursoRepository.findById(curso_id);
+            if(existeCurso.isEmpty()){
+                throw new NotFoundException("Curso " + curso_id + " não encontrado");
+            }
+        });
+
         List<Curso> listaDeCursos = cursoRepository.findAllById(criaProfessor.getCursos_id());
         
         Professor novoProfessor = new Professor();
@@ -60,6 +68,13 @@ public class ProfessorServiceImpl implements ProfessorService{
         if(existeProfessor.isEmpty()){
             throw new NotFoundException("Professor não encontrado!");
         }
+
+        atualizaProfessor.getCursos_id().forEach(curso_id -> {
+            Optional<Curso> existeCurso = cursoRepository.findById(curso_id);
+            if(existeCurso.isEmpty()){
+                throw new NotFoundException("Curso " + curso_id + " não encontrado");
+            }
+        });
 
         List<Curso> listaDCursos = cursoRepository.findAllById(atualizaProfessor.getCursos_id());
 

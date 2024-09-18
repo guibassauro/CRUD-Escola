@@ -36,8 +36,12 @@ public class MatriculaServiceImpl implements MatriculaService{
         Optional<Aluno> existeAluno = alunoRepository.findById(criaMatricula.getIdDoAluno());
         Optional<Curso> existeCurso = cursoRepository.findById(criaMatricula.getIdDoCurso());
 
-        if(existeAluno.isEmpty() || existeCurso.isEmpty()){
-            throw new NotFoundException("Parâmetros inválidos");
+        if(existeAluno.isEmpty()){
+            throw new NotFoundException("Aluno " + criaMatricula.getIdDoAluno() + " não encontrado");
+        }
+
+        if(existeCurso.isEmpty()){
+            throw new NotFoundException("Curso " + criaMatricula.getIdDoCurso() + " não encontrado");
         }
 
         existeAluno.get().getMatriculas().forEach(matricula -> {
