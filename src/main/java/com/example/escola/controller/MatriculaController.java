@@ -24,7 +24,7 @@ public interface MatriculaController {
             @Parameter(name = "criaMatricula", description = "Corpo com id do aluno e do curso para gerar a matricula")
         },
         responses = {
-            @ApiResponse(responseCode = "200", description = "Sucedeu em criar a matricula"),
+            @ApiResponse(responseCode = "201", description = "Sucedeu em criar a matricula"),
             @ApiResponse(responseCode = "400", description = "Não permitiu matricular um aluno duas vezes no mesmo curso"),
             @ApiResponse(responseCode = "404", description = "Aluno não encontrado no banco de dados"),
             @ApiResponse(responseCode = "404", description = "Curso não encontrado no banco de dados")

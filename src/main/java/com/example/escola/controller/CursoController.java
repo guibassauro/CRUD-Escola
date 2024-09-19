@@ -26,7 +26,7 @@ public interface CursoController {
             @Parameter(name = "criaCurso", description = "Corpo da requisição para criação do curso")
         },
         responses = {
-            @ApiResponse(responseCode = "200", description = "Sucedeu em criar o Curso")
+            @ApiResponse(responseCode = "201", description = "Sucedeu em criar o Curso")
         }
     )
     ResponseEntity<Object> criaNovoCurso(CriaCursoRequest criaCurso);

@@ -40,7 +40,7 @@ public interface AlunoController {
             @Parameter(name = "criaAluno", description = "Corpo da requisição do aluno")
         },
         responses = {
-            @ApiResponse(responseCode = "200", description = "Sucedeu em criar o aluno"),
+            @ApiResponse(responseCode = "201", description = "Sucedeu em criar o aluno"),
             @ApiResponse(responseCode = "400", description = "Não permitiu a criação com um e-mail já cadastrado")
         }
     )

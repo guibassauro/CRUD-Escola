@@ -40,7 +40,7 @@ public interface ProfessorController {
             @Parameter(name = "criaProfessor", description = "Corpo de requisição para criação do objeto")
         },
         responses = {
-            @ApiResponse(responseCode = "200", description = "Sucedeu em criar o Professor"),
+            @ApiResponse(responseCode = "201", description = "Sucedeu em criar o Professor"),
             @ApiResponse(responseCode = "404", description = "Um dos cursos não foi encontrado")
         }
     )
