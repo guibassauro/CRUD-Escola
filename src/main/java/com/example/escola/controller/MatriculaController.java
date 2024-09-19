@@ -1,41 +1,47 @@
 package com.example.escola.controller;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.example.escola.dto.CriaMatriculaRequest;
-import com.example.escola.service.MatriculaService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 
-import lombok.RequiredArgsConstructor;
-
-@RequiredArgsConstructor
-@RequestMapping("/matriculas")
-@RestController
-public class MatriculaController {
+public interface MatriculaController {
     
-    private final MatriculaService matriculaService;
+    @Operation(
+        summary = "Acha Matriculas",
+        description = "Retorna uma lista com todas as matriculas",
+        responses = {
+            @ApiResponse(responseCode = "200", description = "Sucedeu em retornar a lista")
+        }
+    )
+    ResponseEntity<Object> achaTodasAsMatriculas();
 
-    @GetMapping
-    public ResponseEntity<Object> achaTodasAsMatriculas(){
-        return ResponseEntity.ok().body(matriculaService.achaTodasAsMatriculas());
-    }
+    @Operation(
+        summary = "Matricula Aluno",
+        description = "Cria uma matricula para ligar aluno a curso",
+        parameters = {
+            @Parameter(name = "criaMatricula", description = "Corpo com id do aluno e do curso para gerar a matricula")
+        },
+        responses = {
+            @ApiResponse(responseCode = "200", description = "Sucedeu em criar a matricula"),
+            @ApiResponse(responseCode = "400", description = "Não permitiu matricular um aluno duas vezes no mesmo curso"),
+            @ApiResponse(responseCode = "404", description = "Aluno não encontrado no banco de dados"),
+            @ApiResponse(responseCode = "404", description = "Curso não encontrado no banco de dados")
+        }
+    )
+    ResponseEntity<Object> matriculaAluno(CriaMatriculaRequest criaMatricula);
 
-    @PostMapping
-    public ResponseEntity<Object> matriculaAluno(@RequestBody CriaMatriculaRequest criaMatricula){
-        return ResponseEntity.status(HttpStatus.CREATED).body(matriculaService.matriculaAluno(criaMatricula));
-    }
-
-    @DeleteMapping("/{aluno_id}")
-    public ResponseEntity<Object> desmatriculaAluno(@PathVariable Long aluno_id){
-        matriculaService.desmatriculaAluno(aluno_id);
-        return ResponseEntity.ok().body("Aluno desmatriculado!");
-    }
-
+    @Operation(
+        summary = "Desmatricula aluno",
+        description = "Deleta matricula do banco, deletando relação entre aluno e curso",
+        parameters = {
+            @Parameter(name = "matricula_id", description = "Id da matricula a ser deletada")
+        },
+        responses = {
+            @ApiResponse(responseCode = "200", description = "Sucedeu em deletar a matricula do banco"),
+            @ApiResponse(responseCode = "404", description = "Matricula não encontrada")
+        }
+    )
+    ResponseEntity<Object> desmatriculaAluno(Long matricula_id);
 }

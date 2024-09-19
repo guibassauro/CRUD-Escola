@@ -15,12 +15,15 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import com.example.escola.dto.AtualizaAlunoRequest;
 import com.example.escola.dto.CriaAlunoRequest;
 import com.example.escola.model.Aluno;
+import com.example.escola.model.Curso;
+import com.example.escola.model.Matricula;
 import com.example.escola.repository.AlunoRepository;
+import com.example.escola.repository.CursoRepository;
 import com.example.escola.service.impl.AlunoServiceImpl;
+import com.example.escola.service.impl.CursoServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Testar Aluno Service")
@@ -29,12 +32,18 @@ public class AlunoServiceTest {
     @Mock
     private AlunoRepository alunoRepository;
 
+    @Mock
+    private CursoRepository cursoRepository;
+
     @InjectMocks
     private AlunoServiceImpl alunoService;
 
+    @InjectMocks
+    private CursoServiceImpl cursoService;
+
     @Test
-    @DisplayName("Teste para verificar funcionamento do GetMapping")
-    void deveVerificarORepository(){
+    @DisplayName("Teste para verificar funcionamento do GetMapping geral")
+    void deveVerificarOFindAll(){
         Aluno aluno1 = new Aluno();
         aluno1.setNome("Pedro");
 
@@ -49,6 +58,46 @@ public class AlunoServiceTest {
         assertNotNull(resultado);
         assertEquals("Pedro", resultado.get(0).getNome());
         assertEquals("Lucas", resultado.get(1).getNome());
+    }
+
+    @Test
+    @DisplayName("Teste do GetMapping de pessoas em determinado curso")
+    void deveVerificarOFindAllByCurso(){
+        Aluno aluno1 = new Aluno();
+        Aluno aluno2 = new Aluno();
+        aluno1.setNome("Lucas");
+        aluno2.setNome("Pedro");
+
+        Matricula matricula1 = new Matricula();
+        Matricula matricula2 = new Matricula();
+        matricula1.setAluno(aluno1);
+        matricula2.setAluno(aluno2);
+
+        Curso cursoExistente = new Curso();
+        cursoExistente.setMatriculas(List.of(matricula1, matricula2));
+
+        when(cursoRepository.findById(cursoExistente.getId())).thenReturn(Optional.of(cursoExistente));
+
+        List<Aluno> resultado = alunoService.achaTodosOsAlunosDeUmCurso(cursoExistente.getId());
+
+        assertNotNull(resultado);
+        assertEquals(resultado.get(0).getNome(), "Lucas");
+        assertEquals(resultado.get(1).getNome(), "Pedro");
+        
+    }
+
+    @Test
+    @DisplayName("Teste para ver se cai na exception de não encontrar o curso")
+    void deveRetornarNotFoundCurso(){
+
+        when(cursoRepository.findById((long)2)).thenReturn(Optional.empty());
+
+        try {
+            alunoService.achaTodosOsAlunosDeUmCurso((long)2);
+            fail("Não deu exception");
+        } catch(Exception e){
+            assertEquals("Curso não encontrado!", e.getMessage());
+        }
     }
 
     @Test
@@ -150,6 +199,25 @@ public class AlunoServiceTest {
             fail("Não deu exception");
         } catch(Exception e){
             assertEquals("Aluno não encontrado!", e.getMessage());
+        }
+    }
+
+    @Test
+    @DisplayName("Testar deletar um aluno com matriculas pra ver se cai na exception")
+    void deveRetornarExceptionDeAlunoTemMatriculas(){
+        Aluno alunoExistente = new Aluno();
+        alunoExistente.setNome("Lucas");
+
+        Matricula matriculaExistente = new Matricula();
+        alunoExistente.setMatriculas(List.of(matriculaExistente));
+
+        when(alunoRepository.findById(alunoExistente.getId())).thenReturn(Optional.of(alunoExistente));
+
+        try{
+            alunoService.deletaAluno(alunoExistente.getId());
+            fail("Não deu Exception");
+        } catch(Exception e){
+            assertEquals("Você não pode deletar um aluno com matriculas em andamento", e.getMessage());
         }
     }
 }
