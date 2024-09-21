@@ -10,5 +10,5 @@ import lombok.NoArgsConstructor;
 public class AtualizaCursoRequest {
     
     private String descricao;
-    private int carga_horaria;
+    private Integer carga_horaria;
 }

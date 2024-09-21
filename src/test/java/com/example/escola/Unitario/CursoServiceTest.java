@@ -1,4 +1,4 @@
-package com.example.escola;
+package com.example.escola.Unitario;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

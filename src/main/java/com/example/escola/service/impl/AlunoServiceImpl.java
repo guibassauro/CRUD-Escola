@@ -77,9 +77,17 @@ public class AlunoServiceImpl implements AlunoService{
 
         Aluno atualizarAluno = existeAluno.get();
 
-        atualizarAluno.setNome(atualizaAluno.getNome());
-        atualizarAluno.setIdade(atualizaAluno.getIdade());
-        atualizarAluno.setGenero(atualizaAluno.getGenero());
+        if(atualizaAluno.getNome() != null){
+            atualizarAluno.setNome(atualizaAluno.getNome());
+        }
+
+        if(atualizaAluno.getIdade() != null){
+            atualizarAluno.setIdade(atualizaAluno.getIdade());
+        }
+
+        if(atualizaAluno.getGenero() != null){
+            atualizarAluno.setGenero(atualizaAluno.getGenero());
+        }
 
         alunoRepository.save(atualizarAluno);
 

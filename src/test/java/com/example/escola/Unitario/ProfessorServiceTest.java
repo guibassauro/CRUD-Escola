@@ -1,4 +1,4 @@
-package com.example.escola;
+package com.example.escola.Unitario;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;

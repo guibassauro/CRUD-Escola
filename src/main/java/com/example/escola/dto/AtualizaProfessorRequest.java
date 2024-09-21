@@ -12,6 +12,6 @@ import lombok.NoArgsConstructor;
 public class AtualizaProfessorRequest {
     
     private String nome;
-    private int idade;
+    private Integer idade;
     private List<Long> cursos_id;
 }
