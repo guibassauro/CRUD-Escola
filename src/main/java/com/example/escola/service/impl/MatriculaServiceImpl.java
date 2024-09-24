@@ -35,6 +35,7 @@ public class MatriculaServiceImpl implements MatriculaService{
     public Matricula matriculaAluno(CriaMatriculaRequest criaMatricula){
         Optional<Aluno> existeAluno = alunoRepository.findById(criaMatricula.getIdDoAluno());
         Optional<Curso> existeCurso = cursoRepository.findById(criaMatricula.getIdDoCurso());
+        List<Matricula> matriculasDoAluno = matriculaRepository.findAllByAluno_Id(criaMatricula.getIdDoAluno());
 
         if(existeAluno.isEmpty()){
             throw new NotFoundException("Aluno " + criaMatricula.getIdDoAluno() + " não encontrado");
@@ -44,21 +45,17 @@ public class MatriculaServiceImpl implements MatriculaService{
             throw new NotFoundException("Curso " + criaMatricula.getIdDoCurso() + " não encontrado");
         }
 
-        existeAluno.get().getMatriculas().forEach(matricula -> {
+        matriculasDoAluno.forEach(matricula -> {
             if(matricula.getCurso().getId() == criaMatricula.getIdDoCurso()){
                 throw new BadRequestException("Aluno já está matriculado neste curso!");
             }
         });
 
-        Matricula novaMatricula = new Matricula(
-            null,
-            existeAluno.get(),
-            existeCurso.get()
-        );
+        Matricula novaMatricula = new Matricula();
+        novaMatricula.setAluno(existeAluno.get());
+        novaMatricula.setCurso(existeCurso.get());
 
         matriculaRepository.save(novaMatricula);
-        existeAluno.get().adicionarMatricula(novaMatricula);
-        existeCurso.get().adicionarMatricula(novaMatricula);
 
         return novaMatricula;
     }
@@ -71,8 +68,6 @@ public class MatriculaServiceImpl implements MatriculaService{
             throw new NotFoundException("Matricula não encontrada");
         }
 
-        existeMatricula.get().setAluno(null);
-        existeMatricula.get().setCurso(null);
 
         matriculaRepository.deleteById(matricula_id);
     }

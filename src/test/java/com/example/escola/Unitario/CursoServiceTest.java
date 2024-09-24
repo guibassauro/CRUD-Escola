@@ -19,6 +19,7 @@ import com.example.escola.dto.CriaCursoRequest;
 import com.example.escola.model.Curso;
 import com.example.escola.model.Matricula;
 import com.example.escola.repository.CursoRepository;
+import com.example.escola.repository.MatriculaRepository;
 import com.example.escola.service.impl.CursoServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
@@ -28,6 +29,9 @@ public class CursoServiceTest {
     @Mock
     private CursoRepository cursoRepository;
 
+    @Mock
+    private MatriculaRepository matriculaRepository;
+    
     @InjectMocks
     private CursoServiceImpl cursoService;
 
@@ -91,18 +95,21 @@ public class CursoServiceTest {
     @Test
     @DisplayName("Testa se sai Exception de não deixar deletar um curso com matriculas")
     void deveNegarDeletarCursoComMatriculas(){
-        Matricula matriculaExistente = new Matricula();
         
-        Curso cursoExistente = new Curso();
-        cursoExistente.setMatriculas(List.of(matriculaExistente));
+        Curso cursoExistente = Curso.builder()
+        .id((long)1).nome("Biologia").build();
 
-        when(cursoRepository.findById(cursoExistente.getId())).thenReturn(Optional.of(cursoExistente));
+        Matricula matriculaExistente = Matricula.builder()
+        .id((long)1).curso(cursoExistente).build();
+
+        when(cursoRepository.findById((long)1)).thenReturn(Optional.of(cursoExistente));
+        when(matriculaRepository.findAllByCurso_Id((long)1)).thenReturn(List.of(matriculaExistente));
 
         try{
             cursoService.deletaCurso(cursoExistente.getId());
             fail("Não deu Exception");
         } catch(Exception e){
-            assertEquals(e.getMessage(), "Você não pode excluir cursos com matriculas em andamento");
+            assertEquals(e.getMessage(), "Você não pode excluir um curso com matriculas em andamento");
         }
     }
 

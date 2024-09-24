@@ -48,6 +48,51 @@ public class AlunoControllerTest {
     private AlunoServiceImpl alunoService;
 
     @Test
+    @DisplayName("Testa se busca os alunos de um curso específico")
+    public void testeDadoCursoValido_QuandoBuscarAlunos_DeveRetornar200() throws Exception{
+        Aluno alunoExistente = Aluno.builder()
+        .id((long)1)
+        .nome("Lucas")
+        .idade(22)
+        .email("pedro@gmail.com")
+        .genero("Masculino")
+        .build();
+        alunoRepository.save(alunoExistente);
+
+        Curso cursoExistente = Curso.builder()
+        .id((long)1)
+        .nome("Ciências da Computação")
+        .descricao("Curso de Ciências da Computação")
+        .carga_horaria(2000)
+        .build();
+        cursoRepository.save(cursoExistente);
+
+        Matricula matriculaExistente = Matricula.builder()
+        .id((long)1)
+        .aluno(alunoExistente)
+        .curso(cursoExistente)
+        .build();
+        matriculaRepository.save(matriculaExistente);
+        String curso_id = matriculaExistente.getId().toString();
+
+        mockMvc.perform(get("/alunos/1")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(curso_id))
+        .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("Testa se cai na exception de não achar o curso")
+    public void testeDadoCursoInexistente_QuandoBuscar_DeveRetornar404() throws Exception{
+        cursoRepository.deleteAll();
+
+        mockMvc.perform(get("/alunos/1")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("1"))
+        .andExpect(status().isNotFound());
+    }
+
+    @Test
     @DisplayName("Testa a criação de um aluno válido")
     public void testeDadoUmAlunoValido_QuandoSalvar_DeveRetornar201() throws Exception{
         CriaAlunoRequest criaAluno = CriaAlunoRequest.builder()

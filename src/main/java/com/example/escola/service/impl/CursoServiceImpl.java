@@ -10,7 +10,9 @@ import com.example.escola.dto.CriaCursoRequest;
 import com.example.escola.exception.BadRequestException;
 import com.example.escola.exception.NotFoundException;
 import com.example.escola.model.Curso;
+import com.example.escola.model.Matricula;
 import com.example.escola.repository.CursoRepository;
+import com.example.escola.repository.MatriculaRepository;
 import com.example.escola.service.CursoService;
 
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 public class CursoServiceImpl implements CursoService{
 
     private final CursoRepository cursoRepository;
+    private final MatriculaRepository matriculaRepository;
     
     @Override
     public List<Curso> achaTodosOsCurso(){
@@ -29,11 +32,11 @@ public class CursoServiceImpl implements CursoService{
     @Override
     public Curso criaNovoCurso(CriaCursoRequest criaCurso){
 
-        Curso novoCurso = new Curso();
-
-        novoCurso.setNome(criaCurso.getNome());
-        novoCurso.setDescricao(criaCurso.getDescricao());
-        novoCurso.setCarga_horaria(criaCurso.getCarga_horaria());
+        Curso novoCurso = Curso.builder()
+        .nome(criaCurso.getNome())
+        .descricao(criaCurso.getDescricao())
+        .carga_horaria(criaCurso.getCarga_horaria())
+        .build();
 
         cursoRepository.save(novoCurso);
 
@@ -50,8 +53,13 @@ public class CursoServiceImpl implements CursoService{
 
         Curso cursoParaAtualizar = existeCurso.get();
 
-        cursoParaAtualizar.setDescricao(atualizaCurso.getDescricao());
-        cursoParaAtualizar.setCarga_horaria(atualizaCurso.getCarga_horaria());
+        if(atualizaCurso.getDescricao() != null){
+            cursoParaAtualizar.setDescricao(atualizaCurso.getDescricao());
+        }
+
+        if(atualizaCurso.getCarga_horaria() != null){
+            cursoParaAtualizar.setCarga_horaria(atualizaCurso.getCarga_horaria());
+        }
 
         cursoRepository.save(cursoParaAtualizar);
 
@@ -61,13 +69,14 @@ public class CursoServiceImpl implements CursoService{
     @Override
     public void deletaCurso(Long curso_id){
         Optional<Curso> existeCurso = cursoRepository.findById(curso_id);
+        List<Matricula> estaMatriculado = matriculaRepository.findAllByCurso_Id(curso_id);
 
         if(existeCurso.isEmpty()){
             throw new NotFoundException("Curso não encontrado!");
         }
 
-        if(!existeCurso.get().getMatriculas().isEmpty()){
-            throw new BadRequestException("Você não pode excluir cursos com matriculas em andamento");
+        if(!estaMatriculado.isEmpty()){
+            throw new BadRequestException("Você não pode excluir um curso com matriculas em andamento");
         }
 
         cursoRepository.deleteById(curso_id);

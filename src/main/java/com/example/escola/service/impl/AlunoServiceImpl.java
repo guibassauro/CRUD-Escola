@@ -12,8 +12,10 @@ import com.example.escola.exception.BadRequestException;
 import com.example.escola.exception.NotFoundException;
 import com.example.escola.model.Aluno;
 import com.example.escola.model.Curso;
+import com.example.escola.model.Matricula;
 import com.example.escola.repository.AlunoRepository;
 import com.example.escola.repository.CursoRepository;
+import com.example.escola.repository.MatriculaRepository;
 import com.example.escola.service.AlunoService;
 
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,7 @@ public class AlunoServiceImpl implements AlunoService{
     
     private final AlunoRepository alunoRepository;
     private final CursoRepository cursoRepository;
+    private final MatriculaRepository matriculaRepository;
 
     @Override
     public List<Aluno> achaTodosOsAlunos(){
@@ -38,12 +41,13 @@ public class AlunoServiceImpl implements AlunoService{
             throw new NotFoundException("Curso não encontrado!");
         }
 
+        List<Matricula> listaDeMatriculas = matriculaRepository.findAllByCurso_Id(curso_id);
         List<Aluno> listaDeAlunos = new ArrayList<>();
 
-        existeCurso.get().getMatriculas().forEach(matricula -> {
+        listaDeMatriculas.forEach(matricula -> {
             listaDeAlunos.add(matricula.getAluno());
         });
-
+        
         return listaDeAlunos;
     }
 
@@ -97,12 +101,13 @@ public class AlunoServiceImpl implements AlunoService{
     @Override
     public void deletaAluno(Long aluno_id){
         Optional<Aluno> existeAluno = alunoRepository.findById(aluno_id);
+        List<Matricula> estaMatriculado = matriculaRepository.findAllByAluno_Id(aluno_id);
 
         if(existeAluno.isEmpty()){
             throw new NotFoundException("Aluno não encontrado!");
         }
 
-        if(!existeAluno.get().getMatriculas().isEmpty()){
+        if(!estaMatriculado.isEmpty()){
             throw new BadRequestException("Você não pode deletar um aluno com matriculas em andamento");
         }
 

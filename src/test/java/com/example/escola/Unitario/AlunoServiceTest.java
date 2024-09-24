@@ -22,8 +22,10 @@ import com.example.escola.model.Curso;
 import com.example.escola.model.Matricula;
 import com.example.escola.repository.AlunoRepository;
 import com.example.escola.repository.CursoRepository;
+import com.example.escola.repository.MatriculaRepository;
 import com.example.escola.service.impl.AlunoServiceImpl;
 import com.example.escola.service.impl.CursoServiceImpl;
+import com.example.escola.service.impl.MatriculaServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Testar Aluno Service")
@@ -35,11 +37,17 @@ public class AlunoServiceTest {
     @Mock
     private CursoRepository cursoRepository;
 
+    @Mock
+    private MatriculaRepository matriculaRepository;
+
     @InjectMocks
     private AlunoServiceImpl alunoService;
 
     @InjectMocks
     private CursoServiceImpl cursoService;
+
+    @InjectMocks
+    private MatriculaServiceImpl matriculaService;
 
     @Test
     @DisplayName("Teste para verificar funcionamento do GetMapping geral")
@@ -61,29 +69,23 @@ public class AlunoServiceTest {
     }
 
     @Test
-    @DisplayName("Teste do GetMapping de pessoas em determinado curso")
-    void deveVerificarOFindAllByCurso(){
-        Aluno aluno1 = new Aluno();
-        Aluno aluno2 = new Aluno();
-        aluno1.setNome("Lucas");
-        aluno2.setNome("Pedro");
+    @DisplayName("Teste do GetMapping de alunos em determinado curso")
+    public void deveVerificarOFindAllByCurso(){
+        Aluno alunoExistente = Aluno.builder()
+        .id((long)1).nome("Lucas").build();
 
-        Matricula matricula1 = new Matricula();
-        Matricula matricula2 = new Matricula();
-        matricula1.setAluno(aluno1);
-        matricula2.setAluno(aluno2);
+        Curso cursoExistente = Curso.builder()
+        .id((long)1).nome("Biologia").build();
 
-        Curso cursoExistente = new Curso();
-        cursoExistente.setMatriculas(List.of(matricula1, matricula2));
+        Matricula matriculaExistente = Matricula.builder()
+        .id((long)1).aluno(alunoExistente).curso(cursoExistente).build();
 
-        when(cursoRepository.findById(cursoExistente.getId())).thenReturn(Optional.of(cursoExistente));
-
-        List<Aluno> resultado = alunoService.achaTodosOsAlunosDeUmCurso(cursoExistente.getId());
-
-        assertNotNull(resultado);
-        assertEquals(resultado.get(0).getNome(), "Lucas");
-        assertEquals(resultado.get(1).getNome(), "Pedro");
+        when(cursoRepository.findById((long)1)).thenReturn(Optional.of(cursoExistente));
+        when(matriculaRepository.findAllByCurso_Id((long)1)).thenReturn(List.of(matriculaExistente));
         
+        List<Aluno> listaDeAlunos = alunoService.achaTodosOsAlunosDeUmCurso((long)1);
+
+        assertEquals(listaDeAlunos.get(0).getNome(), "Lucas");
     }
 
     @Test
@@ -205,13 +207,14 @@ public class AlunoServiceTest {
     @Test
     @DisplayName("Testar deletar um aluno com matriculas pra ver se cai na exception")
     void deveRetornarExceptionDeAlunoTemMatriculas(){
-        Aluno alunoExistente = new Aluno();
-        alunoExistente.setNome("Lucas");
+        Aluno alunoExistente = Aluno.builder()
+        .id((long)1).build();
 
-        Matricula matriculaExistente = new Matricula();
-        alunoExistente.setMatriculas(List.of(matriculaExistente));
+        Matricula matriculaExistente = Matricula.builder()
+        .id((long)1).aluno(alunoExistente).build();
 
-        when(alunoRepository.findById(alunoExistente.getId())).thenReturn(Optional.of(alunoExistente));
+        when(alunoRepository.findById((long)1)).thenReturn(Optional.of(alunoExistente));
+        when(matriculaRepository.findAllByAluno_Id((long)1)).thenReturn(List.of(matriculaExistente));
 
         try{
             alunoService.deletaAluno(alunoExistente.getId());

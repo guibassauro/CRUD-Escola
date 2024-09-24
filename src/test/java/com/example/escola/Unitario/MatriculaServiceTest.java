@@ -82,26 +82,27 @@ public class MatriculaServiceTest {
     @Test
     @DisplayName("Testa exception de não poder matricular o mesmo aluno 2 vezes no mesmo curso")
     void deveRetornarBadExceptionMatriculaJaFeita(){
-        Aluno aluno = new Aluno();
-        Curso curso = new Curso();
+        Aluno alunoExistente = Aluno.builder()
+        .id((long)1).build();
 
-        Matricula matriculaExistente = new Matricula();
-        matriculaExistente.setAluno(aluno);
-        matriculaExistente.setCurso(curso);
-        aluno.setMatriculas(List.of(matriculaExistente));
+        Curso cursoExistente = Curso.builder()
+        .id((long)1).build();
 
-        CriaMatriculaRequest criaMatricula = new CriaMatriculaRequest();
-        criaMatricula.setIdDoAluno(aluno.getId());
-        criaMatricula.setIdDoCurso(curso.getId());
+        Matricula matriculaExistente = Matricula.builder()
+        .id((long)1).aluno(alunoExistente).curso(cursoExistente).build();
 
-        when(alunoRepository.findById(aluno.getId())).thenReturn(Optional.of(aluno));
-        when(cursoRepository.findById(curso.getId())).thenReturn(Optional.of(curso));
+        CriaMatriculaRequest criaMatricula = CriaMatriculaRequest.builder()
+        .idDoAluno((long)1).idDoCurso((long)1).build();
+
+        when(alunoRepository.findById((long)1)).thenReturn(Optional.of(alunoExistente));
+        when(cursoRepository.findById((long)1)).thenReturn(Optional.of(cursoExistente));
+        when(matriculaRepository.findAllByAluno_Id((long)1)).thenReturn(List.of(matriculaExistente));
 
         try{
             matriculaService.matriculaAluno(criaMatricula);
             fail("Não deu exception");
         } catch(Exception e){
-            assertEquals(e.getMessage(), "Aluno já está matriculado neste curso!");
+            assertEquals("Aluno já está matriculado neste curso!", e.getMessage());
         }
     }
 

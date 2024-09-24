@@ -1,7 +1,5 @@
 package com.example.escola.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -27,14 +25,11 @@ public class Matricula {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "aluno_id", nullable = false)
-    @JsonIgnoreProperties("matriculas")
+    @JoinColumn(name = "aluno_id")
     private Aluno aluno;
 
     @ManyToOne
-    @JoinColumn(name = "curso_id", nullable = false)
-    @JsonIgnoreProperties("matriculas")
+    @JoinColumn(name = "curso_id")
     private Curso curso;
-
 
 }

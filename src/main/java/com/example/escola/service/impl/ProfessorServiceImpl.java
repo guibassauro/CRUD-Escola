@@ -69,20 +69,28 @@ public class ProfessorServiceImpl implements ProfessorService{
             throw new NotFoundException("Professor não encontrado!");
         }
 
-        atualizaProfessor.getCursos_id().forEach(curso_id -> {
-            Optional<Curso> existeCurso = cursoRepository.findById(curso_id);
-            if(existeCurso.isEmpty()){
-                throw new NotFoundException("Curso " + curso_id + " não encontrado");
-            }
-        });
-
-        List<Curso> listaDCursos = cursoRepository.findAllById(atualizaProfessor.getCursos_id());
-
         Professor professorAtualizado = existeProfessor.get();
 
-        professorAtualizado.setNome(atualizaProfessor.getNome());
-        professorAtualizado.setIdade(atualizaProfessor.getIdade());
-        professorAtualizado.setCursos(listaDCursos);
+        if(atualizaProfessor.getNome() != null){
+            professorAtualizado.setNome(atualizaProfessor.getNome());
+        }
+
+        if(atualizaProfessor.getIdade() != null){
+            professorAtualizado.setIdade(atualizaProfessor.getIdade());
+        }
+
+        if(atualizaProfessor.getCursos_id() != null){
+            
+            atualizaProfessor.getCursos_id().forEach(curso_id -> {
+                Optional<Curso> existeCurso = cursoRepository.findById(curso_id);
+                if(existeCurso.isEmpty()){
+                    throw new NotFoundException("Curso " + curso_id + " não encontrado");
+                }
+            });
+
+            List<Curso> listaDCursos = cursoRepository.findAllById(atualizaProfessor.getCursos_id());
+            professorAtualizado.setCursos(listaDCursos);
+        }
 
         professorRepository.save(professorAtualizado);
 
