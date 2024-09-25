@@ -37,7 +37,11 @@ public class Professor {
     private int idade;
 
     @ManyToMany
-    @JoinTable(name = "professor_curso", joinColumns = @JoinColumn(name  = "curso_id"))
+    @JoinTable(
+        name = "professor_curso",
+        joinColumns = {@JoinColumn(name  = "professor_id", referencedColumnName = "id")},
+        inverseJoinColumns = {@JoinColumn(name = "curso_id", referencedColumnName = "id")}
+    )
     @JsonIgnoreProperties("professor")
     private List<Curso> cursos;
 
