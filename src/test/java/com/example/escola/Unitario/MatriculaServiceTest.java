@@ -20,9 +20,9 @@ import com.example.escola.dto.Response.CriaMatriculaResponse;
 import com.example.escola.model.Aluno;
 import com.example.escola.model.Curso;
 import com.example.escola.model.Matricula;
-import com.example.escola.repository.AlunoRepository;
-import com.example.escola.repository.CursoRepository;
 import com.example.escola.repository.MatriculaRepository;
+import com.example.escola.service.impl.AlunoServiceImpl;
+import com.example.escola.service.impl.CursoServiceImpl;
 import com.example.escola.service.impl.MatriculaServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
@@ -33,10 +33,10 @@ public class MatriculaServiceTest {
     private MatriculaRepository matriculaRepository;
 
     @Mock
-    private AlunoRepository alunoRepository;
+    private AlunoServiceImpl alunoService;
 
     @Mock
-    private CursoRepository cursoRepository;
+    private CursoServiceImpl cursoService;
 
     @InjectMocks
     private MatriculaServiceImpl matriculaService;
@@ -48,7 +48,7 @@ public class MatriculaServiceTest {
         CriaMatriculaRequest criaMatricula = CriaMatriculaRequest.builder()
         .idDoAluno((long)2).build();
         
-        when(alunoRepository.findById((long)2)).thenReturn(Optional.empty());
+        when(alunoService.achaPorAlunoId((long)2)).thenReturn(Optional.empty());
 
         try{
             matriculaService.matriculaAluno(criaMatricula);
@@ -64,13 +64,11 @@ public class MatriculaServiceTest {
         Aluno alunoExistente = Aluno.builder()
         .id((long)1).build();
         CriaMatriculaRequest criaMatricula = CriaMatriculaRequest.builder()
-        .idDoCurso((long)2).build();
-
-        when(alunoRepository.findById(criaMatricula.getIdDoAluno()))
-                            .thenReturn(Optional.of(alunoExistente));
+        .idDoAluno((long)1).idDoCurso((long)2).build();
         
-        when(cursoRepository.findById((long)2))
-                            .thenReturn(Optional.empty());
+        when(alunoService.achaPorAlunoId((long)1)).thenReturn(Optional.of(alunoExistente));
+
+        when(cursoService.achaCursoPorId((long)2)).thenReturn(Optional.empty());
 
         try{
             matriculaService.matriculaAluno(criaMatricula);
@@ -95,8 +93,8 @@ public class MatriculaServiceTest {
         CriaMatriculaRequest criaMatricula = CriaMatriculaRequest.builder()
         .idDoAluno((long)1).idDoCurso((long)1).build();
 
-        when(alunoRepository.findById((long)1)).thenReturn(Optional.of(alunoExistente));
-        when(cursoRepository.findById((long)1)).thenReturn(Optional.of(cursoExistente));
+        when(alunoService.achaPorAlunoId((long)1)).thenReturn(Optional.of(alunoExistente));
+        when(cursoService.achaCursoPorId((long)1)).thenReturn(Optional.of(cursoExistente));
         when(matriculaRepository.findAllByAluno_Id((long)1)).thenReturn(List.of(matriculaExistente));
 
         try{
@@ -111,17 +109,17 @@ public class MatriculaServiceTest {
     @DisplayName("Teste para matricular aluno")
     void deveRetornarMatriculaFeita(){
         Aluno aluno = Aluno.builder()
-        .nome("Lucas").build();
+        .id((long)1).nome("Lucas").build();
         Curso curso = Curso.builder()
-        .nome("Ciências da Computação").build();
+        .id((long)1).nome("Ciências da Computação").build();
 
         CriaMatriculaRequest criaMatricula = CriaMatriculaRequest.builder()
         .idDoAluno(aluno.getId())
         .idDoCurso(curso.getId())
         .build();
 
-        when(alunoRepository.findById(aluno.getId())).thenReturn(Optional.of(aluno));
-        when(cursoRepository.findById(curso.getId())).thenReturn(Optional.of(curso));
+        when(alunoService.achaPorAlunoId((long)1)).thenReturn(Optional.of(aluno));
+        when(cursoService.achaCursoPorId((long)1)).thenReturn(Optional.of(curso));
 
         CriaMatriculaResponse novaMatricula = matriculaService.matriculaAluno(criaMatricula);
 

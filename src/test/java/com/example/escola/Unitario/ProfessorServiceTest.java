@@ -20,8 +20,8 @@ import com.example.escola.dto.Response.AtualizaProfessorResponse;
 import com.example.escola.dto.Response.CriaProfessorResponse;
 import com.example.escola.model.Curso;
 import com.example.escola.model.Professor;
-import com.example.escola.repository.CursoRepository;
 import com.example.escola.repository.ProfessorRepository;
+import com.example.escola.service.impl.CursoServiceImpl;
 import com.example.escola.service.impl.ProfessorServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
@@ -32,7 +32,7 @@ public class ProfessorServiceTest {
     private ProfessorRepository professorRepository;
 
     @Mock
-    private CursoRepository cursoRepository;
+    private CursoServiceImpl cursoService;
 
     @InjectMocks
     private ProfessorServiceImpl professorService;
@@ -48,7 +48,7 @@ public class ProfessorServiceTest {
         .professores(List.of(profe1, profe2))
         .build();
 
-        when(cursoRepository.findById(curso.getId())).thenReturn(Optional.of(curso));
+        when(cursoService.achaCursoPorId(curso.getId())).thenReturn(Optional.of(curso));
 
         List<Professor> resultado = professorService.achaTodosOsProfessoresDeUmCurso(curso.getId());
 
@@ -63,7 +63,7 @@ public class ProfessorServiceTest {
         CriaProfessorRequest criaProfessor = CriaProfessorRequest.builder()
         .cursos_id(List.of((long)1)).build();
         
-        when(cursoRepository.findById((long)1)).thenReturn(Optional.empty());
+        when(cursoService.achaCursoPorId((long)1)).thenReturn(Optional.empty());
 
         try{
             professorService.criaNovoProfessor(criaProfessor);
@@ -99,8 +99,8 @@ public class ProfessorServiceTest {
         .cursos_id(List.of((long)1))
         .build();
 
-        when(cursoRepository.findAllById(criaProfessor.getCursos_id())).thenReturn(List.of(curso1));
-        when(cursoRepository.findById((long)1)).thenReturn(Optional.of(curso1));
+        when(cursoService.achaTodosPorCursoId(criaProfessor.getCursos_id())).thenReturn(List.of(curso1));
+        when(cursoService.achaCursoPorId((long)1)).thenReturn(Optional.of(curso1));
 
         CriaProfessorResponse novoProfessor = professorService.criaNovoProfessor(criaProfessor);
 
@@ -132,8 +132,8 @@ public class ProfessorServiceTest {
         .cursos_id(List.of((long)2)).build();
 
         when(professorRepository.findById((long)1)).thenReturn(Optional.of(professorExistente));
-        when(cursoRepository.findAllById(atualizaProfessor.getCursos_id())).thenReturn(List.of(curso2));
-        when(cursoRepository.findById((long)2)).thenReturn(Optional.of(curso2));
+        when(cursoService.achaTodosPorCursoId(atualizaProfessor.getCursos_id())).thenReturn(List.of(curso2));
+        when(cursoService.achaCursoPorId((long)2)).thenReturn(Optional.of(curso2));
         
         AtualizaProfessorResponse professorAtt = professorService.atualizaProfessor(professorExistente.getId(), atualizaProfessor);
 

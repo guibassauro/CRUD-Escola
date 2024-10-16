@@ -21,8 +21,8 @@ import com.example.escola.dto.Response.CriaCursoResponse;
 import com.example.escola.model.Curso;
 import com.example.escola.model.Matricula;
 import com.example.escola.repository.CursoRepository;
-import com.example.escola.repository.MatriculaRepository;
 import com.example.escola.service.impl.CursoServiceImpl;
+import com.example.escola.service.impl.MatriculaServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Testar Curso Service")
@@ -32,7 +32,7 @@ public class CursoServiceTest {
     private CursoRepository cursoRepository;
 
     @Mock
-    private MatriculaRepository matriculaRepository;
+    private MatriculaServiceImpl matriculaService;
     
     @InjectMocks
     private CursoServiceImpl cursoService;
@@ -111,7 +111,7 @@ public class CursoServiceTest {
         .id((long)1).curso(cursoExistente).build();
 
         when(cursoRepository.findById((long)1)).thenReturn(Optional.of(cursoExistente));
-        when(matriculaRepository.findAllByCurso_Id((long)1)).thenReturn(List.of(matriculaExistente));
+        when(matriculaService.achaTodasPorCursoId((long)1)).thenReturn(List.of(matriculaExistente));
 
         try{
             cursoService.deletaCurso(cursoExistente.getId());
