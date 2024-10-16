@@ -16,8 +16,6 @@ import com.example.escola.model.Aluno;
 import com.example.escola.model.Curso;
 import com.example.escola.model.Matricula;
 import com.example.escola.repository.AlunoRepository;
-import com.example.escola.repository.CursoRepository;
-import com.example.escola.repository.MatriculaRepository;
 import com.example.escola.service.AlunoService;
 
 import lombok.RequiredArgsConstructor;
@@ -27,8 +25,8 @@ import lombok.RequiredArgsConstructor;
 public class AlunoServiceImpl implements AlunoService{
     
     private final AlunoRepository alunoRepository;
-    private final CursoRepository cursoRepository;
-    private final MatriculaRepository matriculaRepository;
+    private final CursoServiceImpl cursoService;
+    private final MatriculaServiceImpl matriculaService;
 
     @Override
     public List<Aluno> achaTodosOsAlunos(){
@@ -37,13 +35,13 @@ public class AlunoServiceImpl implements AlunoService{
 
     @Override
     public List<Aluno> achaTodosOsAlunosDeUmCurso(Long curso_id){
-        Optional<Curso> existeCurso = cursoRepository.findById(curso_id);
-
+        Optional<Curso> existeCurso = cursoService.achaCursoPorId(curso_id);
+        
         if(existeCurso.isEmpty()){
             throw new NotFoundException("Curso não encontrado!");
+        
         }
-
-        List<Matricula> listaDeMatriculas = matriculaRepository.findAllByCurso_Id(curso_id);
+        List<Matricula> listaDeMatriculas = matriculaService.achaTodasPorCursoId(curso_id);
         List<Aluno> listaDeAlunos = new ArrayList<>();
 
         listaDeMatriculas.forEach(matricula -> {
@@ -106,7 +104,7 @@ public class AlunoServiceImpl implements AlunoService{
     @Override
     public void deletaAluno(Long aluno_id){
         Optional<Aluno> existeAluno = alunoRepository.findById(aluno_id);
-        List<Matricula> estaMatriculado = matriculaRepository.findAllByAluno_Id(aluno_id);
+        List<Matricula> estaMatriculado = matriculaService.achaTodosPorAlunoId(aluno_id);
 
         if(existeAluno.isEmpty()){
             throw new NotFoundException("Aluno não encontrado!");
@@ -117,5 +115,11 @@ public class AlunoServiceImpl implements AlunoService{
         }
 
         alunoRepository.deleteById(aluno_id);
+    }
+
+    public Optional<Aluno> achaPorAlunoId(Long aluno_id){
+        Optional<Aluno> existeAluno = alunoRepository.findById(aluno_id);
+
+        return existeAluno;
     }
 }

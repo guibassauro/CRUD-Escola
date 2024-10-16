@@ -12,8 +12,6 @@ import com.example.escola.exception.NotFoundException;
 import com.example.escola.model.Aluno;
 import com.example.escola.model.Curso;
 import com.example.escola.model.Matricula;
-import com.example.escola.repository.AlunoRepository;
-import com.example.escola.repository.CursoRepository;
 import com.example.escola.repository.MatriculaRepository;
 import com.example.escola.service.MatriculaService;
 
@@ -24,8 +22,8 @@ import lombok.RequiredArgsConstructor;
 public class MatriculaServiceImpl implements MatriculaService{
     
     private final MatriculaRepository matriculaRepository;
-    private final AlunoRepository alunoRepository;
-    private final CursoRepository cursoRepository;
+    private final AlunoServiceImpl alunoService;
+    private final CursoServiceImpl cursoService;
 
     @Override
     public List<Matricula> achaTodasAsMatriculas(){
@@ -34,8 +32,8 @@ public class MatriculaServiceImpl implements MatriculaService{
 
     @Override
     public CriaMatriculaResponse matriculaAluno(CriaMatriculaRequest criaMatricula){
-        Optional<Aluno> existeAluno = alunoRepository.findById(criaMatricula.getIdDoAluno());
-        Optional<Curso> existeCurso = cursoRepository.findById(criaMatricula.getIdDoCurso());
+        Optional<Aluno> existeAluno = alunoService.achaPorAlunoId(criaMatricula.getIdDoAluno());
+        Optional<Curso> existeCurso = cursoService.achaCursoPorId(criaMatricula.getIdDoCurso());
         List<Matricula> matriculasDoAluno = matriculaRepository.findAllByAluno_Id(criaMatricula.getIdDoAluno());
 
         if(existeAluno.isEmpty()){
@@ -78,5 +76,17 @@ public class MatriculaServiceImpl implements MatriculaService{
 
 
         matriculaRepository.deleteById(matricula_id);
+    }
+
+    public List<Matricula> achaTodasPorCursoId(Long curso_id){
+        List<Matricula> matriculas = matriculaRepository.findAllByCurso_Id(curso_id);
+
+        return matriculas;
+    }
+
+    public List<Matricula> achaTodosPorAlunoId(Long aluno_id){
+        List<Matricula> matriculas = matriculaRepository.findAllByAluno_Id(aluno_id);
+
+        return matriculas;
     }
 }

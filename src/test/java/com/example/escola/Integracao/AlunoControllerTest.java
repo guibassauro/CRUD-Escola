@@ -15,6 +15,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.example.escola.dto.Request.AtualizaAlunoRequest;
 import com.example.escola.dto.Request.CriaAlunoRequest;
+import com.example.escola.dto.Response.AtualizarAlunoResponse;
 import com.example.escola.model.Aluno;
 import com.example.escola.model.Curso;
 import com.example.escola.model.Matricula;
@@ -157,7 +158,7 @@ public class AlunoControllerTest {
         .build();
         String atualizaAlunoString = mapper.writeValueAsString(atualizaAluno);
 
-        Aluno alunoAtualizado = alunoService.atualizaAluno((long) 1, atualizaAluno);
+        AtualizarAlunoResponse alunoAtualizado = alunoService.atualizaAluno((long) 1, atualizaAluno);
 
         mockMvc.perform(patch("/alunos/1")
         .contentType(MediaType.APPLICATION_JSON)

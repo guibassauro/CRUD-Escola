@@ -24,8 +24,6 @@ import com.example.escola.model.Aluno;
 import com.example.escola.model.Curso;
 import com.example.escola.model.Matricula;
 import com.example.escola.repository.AlunoRepository;
-import com.example.escola.repository.CursoRepository;
-import com.example.escola.repository.MatriculaRepository;
 import com.example.escola.service.impl.AlunoServiceImpl;
 import com.example.escola.service.impl.CursoServiceImpl;
 import com.example.escola.service.impl.MatriculaServiceImpl;
@@ -38,19 +36,13 @@ public class AlunoServiceTest {
     private AlunoRepository alunoRepository;
 
     @Mock
-    private CursoRepository cursoRepository;
+    private CursoServiceImpl cursoService;
 
     @Mock
-    private MatriculaRepository matriculaRepository;
+    private MatriculaServiceImpl matriculaService;
 
     @InjectMocks
     private AlunoServiceImpl alunoService;
-
-    @InjectMocks
-    private CursoServiceImpl cursoService;
-
-    @InjectMocks
-    private MatriculaServiceImpl matriculaService;
 
     @Test
     @DisplayName("Teste para verificar funcionamento do GetMapping geral")
@@ -84,8 +76,8 @@ public class AlunoServiceTest {
         Matricula matriculaExistente = Matricula.builder()
         .id((long)1).aluno(alunoExistente).curso(cursoExistente).build();
 
-        when(cursoRepository.findById((long)1)).thenReturn(Optional.of(cursoExistente));
-        when(matriculaRepository.findAllByCurso_Id((long)1)).thenReturn(List.of(matriculaExistente));
+        when(cursoService.achaCursoPorId((long)1)).thenReturn(Optional.of(cursoExistente));
+        when(matriculaService.achaTodasPorCursoId((long)1)).thenReturn(List.of(matriculaExistente));
         
         List<Aluno> listaDeAlunos = alunoService.achaTodosOsAlunosDeUmCurso((long)1);
 
@@ -96,7 +88,7 @@ public class AlunoServiceTest {
     @DisplayName("Teste para ver se cai na exception de não encontrar o curso")
     void deveRetornarNotFoundCurso(){
 
-        when(cursoRepository.findById((long)2)).thenReturn(Optional.empty());
+        when(cursoService.achaCursoPorId((long)2)).thenReturn(Optional.empty());
 
         try {
             alunoService.achaTodosOsAlunosDeUmCurso((long)2);
@@ -224,7 +216,7 @@ public class AlunoServiceTest {
         .id((long)1).aluno(alunoExistente).build();
 
         when(alunoRepository.findById((long)1)).thenReturn(Optional.of(alunoExistente));
-        when(matriculaRepository.findAllByAluno_Id((long)1)).thenReturn(List.of(matriculaExistente));
+        when(matriculaService.achaTodosPorAlunoId((long)1)).thenReturn(List.of(matriculaExistente));
 
         try{
             alunoService.deletaAluno(alunoExistente.getId());

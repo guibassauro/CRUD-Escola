@@ -12,7 +12,6 @@ import com.example.escola.dto.Response.CriaProfessorResponse;
 import com.example.escola.exception.NotFoundException;
 import com.example.escola.model.Curso;
 import com.example.escola.model.Professor;
-import com.example.escola.repository.CursoRepository;
 import com.example.escola.repository.ProfessorRepository;
 import com.example.escola.service.ProfessorService;
 
@@ -23,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 public class ProfessorServiceImpl implements ProfessorService{
     
     private final ProfessorRepository professorRepository;
-    private final CursoRepository cursoRepository;
+    private final CursoServiceImpl cursoService;
 
     @Override
     public List<Professor> achaTodosOsProfessores(){
@@ -32,7 +31,7 @@ public class ProfessorServiceImpl implements ProfessorService{
 
     @Override
     public List<Professor> achaTodosOsProfessoresDeUmCurso(Long curso_id){
-        Optional<Curso> existeCurso = cursoRepository.findById(curso_id);
+        Optional<Curso> existeCurso = cursoService.achaCursoPorId(curso_id);
 
         if(existeCurso.isEmpty()){
             throw new NotFoundException("Curso não encontrado!");
@@ -45,13 +44,13 @@ public class ProfessorServiceImpl implements ProfessorService{
     public CriaProfessorResponse criaNovoProfessor(CriaProfessorRequest criaProfessor){
         
         criaProfessor.getCursos_id().forEach(curso_id -> {
-            Optional<Curso> existeCurso = cursoRepository.findById(curso_id);
+            Optional<Curso> existeCurso = cursoService.achaCursoPorId(curso_id);
             if(existeCurso.isEmpty()){
                 throw new NotFoundException("Curso " + curso_id + " não encontrado");
             }
         });
 
-        List<Curso> listaDeCursos = cursoRepository.findAllById(criaProfessor.getCursos_id());
+        List<Curso> listaDeCursos = cursoService.achaTodosPorCursoId(criaProfessor.getCursos_id());
         
         Professor novoProfessor = Professor.builder()
         .nome(criaProfessor.getNome())
@@ -81,14 +80,14 @@ public class ProfessorServiceImpl implements ProfessorService{
 
         if(!atualizaProfessor.getCursos_id().isEmpty()){
             atualizaProfessor.getCursos_id().forEach(curso_id -> {
-                Optional<Curso> existeCurso = cursoRepository.findById(curso_id);
+                Optional<Curso> existeCurso = cursoService.achaCursoPorId(curso_id);
                 if(existeCurso.isEmpty()){
                     throw new NotFoundException("Curso não encontrado");
                 }
             });
         }
 
-        List<Curso> listaDeCursos = cursoRepository.findAllById(atualizaProfessor.getCursos_id());
+        List<Curso> listaDeCursos = cursoService.achaTodosPorCursoId(atualizaProfessor.getCursos_id());
 
         Professor professorAtualizado = Professor.builder()
         .id(existeProfessor.get().getId())

@@ -14,7 +14,6 @@ import com.example.escola.exception.NotFoundException;
 import com.example.escola.model.Curso;
 import com.example.escola.model.Matricula;
 import com.example.escola.repository.CursoRepository;
-import com.example.escola.repository.MatriculaRepository;
 import com.example.escola.service.CursoService;
 
 import lombok.RequiredArgsConstructor;
@@ -24,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 public class CursoServiceImpl implements CursoService{
 
     private final CursoRepository cursoRepository;
-    private final MatriculaRepository matriculaRepository;
+    private final MatriculaServiceImpl matriculaService;
     
     @Override
     public List<Curso> achaTodosOsCurso(){
@@ -82,7 +81,7 @@ public class CursoServiceImpl implements CursoService{
     @Override
     public void deletaCurso(Long curso_id){
         Optional<Curso> existeCurso = cursoRepository.findById(curso_id);
-        List<Matricula> estaMatriculado = matriculaRepository.findAllByCurso_Id(curso_id);
+        List<Matricula> estaMatriculado = matriculaService.achaTodasPorCursoId(curso_id);
 
         if(existeCurso.isEmpty()){
             throw new NotFoundException("Curso não encontrado!");
@@ -93,6 +92,18 @@ public class CursoServiceImpl implements CursoService{
         }
 
         cursoRepository.deleteById(curso_id);
+    }
+
+    public Optional<Curso> achaCursoPorId(Long curso_id){
+        Optional<Curso> existeCurso = cursoRepository.findById(curso_id);
+
+        return existeCurso;
+    }
+
+    public List<Curso> achaTodosPorCursoId(List<Long> cursos_id){
+        List<Curso> listaDeCursos = cursoRepository.findAllById(cursos_id);
+
+        return listaDeCursos;
     }
     
 }
