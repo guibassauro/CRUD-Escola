@@ -64,6 +64,8 @@ public class AlunoServiceImpl implements AlunoService{
         .email(criaAluno.getEmail())
         .idade(criaAluno.getIdade()).build();
 
+        alunoRepository.save(novoAluno);
+
         CriaAlunoResponse resposta = CriaAlunoResponse.builder()
         .nome(novoAluno.getNome())
         .email(novoAluno.getEmail())
@@ -90,7 +92,6 @@ public class AlunoServiceImpl implements AlunoService{
 
         alunoRepository.save(atualizarAluno);
 
-        
         AtualizarAlunoResponse resposta = AtualizarAlunoResponse.builder()
         .id(atualizarAluno.getId())
         .nome(atualizarAluno.getNome())

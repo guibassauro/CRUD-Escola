@@ -80,6 +80,7 @@ public class CursoServiceTest {
             fail("Não deu exception");
         } catch(Exception e){
             assertEquals(e.getMessage(), "Curso não encontrado!");
+            verify(cursoRepository).findById((long)2);
         }
     }
 
@@ -93,11 +94,18 @@ public class CursoServiceTest {
         AtualizaCursoRequest atualizaCurso = AtualizaCursoRequest.builder()
         .descricao("Ciências da Computação").build();
 
+        Curso cursoAtualizado = Curso.builder()
+        .id(cursoExistente.getId())
+        .descricao(atualizaCurso.getDescricao())
+        .build();
+
         when(cursoRepository.findById((long)1)).thenReturn(Optional.of(cursoExistente));
 
         AtualizaCursoResponse resposta = cursoService.atualizaCurso(cursoExistente.getId(), atualizaCurso);
 
         assertEquals("Ciências da Computação", resposta.getDescricao());
+        verify(cursoRepository).findById((long)1);
+        verify(cursoRepository).save(cursoAtualizado);
     }
 
     @Test
@@ -118,6 +126,8 @@ public class CursoServiceTest {
             fail("Não deu Exception");
         } catch(Exception e){
             assertEquals(e.getMessage(), "Você não pode excluir um curso com matriculas em andamento");
+            verify(cursoRepository).findById((long)1);
+            verify(matriculaService).achaTodasPorCursoId((long)1);
         }
     }
 
@@ -125,12 +135,14 @@ public class CursoServiceTest {
     @DisplayName("Testa se deleta Curso válido")
     void deveDeletarCursoValido(){
         Curso cursoExistente = Curso.builder()
-        .nome("Biologia").build();
+        .id((long)1).nome("Biologia").build();
 
         when(cursoRepository.findById(cursoExistente.getId())).thenReturn(Optional.of(cursoExistente));
 
         cursoService.deletaCurso(cursoExistente.getId());
 
+        verify(cursoRepository).findById((long)1);
+        verify(matriculaService).achaTodasPorCursoId((long)1);
         verify(cursoRepository).deleteById(cursoExistente.getId());
     }
 }

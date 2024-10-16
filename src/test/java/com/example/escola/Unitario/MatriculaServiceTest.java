@@ -55,6 +55,7 @@ public class MatriculaServiceTest {
             fail("Não deu exception");
         } catch(Exception e){
             assertEquals(e.getMessage(), "Aluno 2 não encontrado");
+            verify(alunoService).achaPorAlunoId((long)2);
         }
     }
 
@@ -75,6 +76,8 @@ public class MatriculaServiceTest {
             fail("Não deu exception");
         } catch(Exception e){
             assertEquals(e.getMessage(), "Curso 2 não encontrado");
+            verify(alunoService).achaPorAlunoId((long)1);
+            verify(cursoService).achaCursoPorId((long)2);
         }
     }
 
@@ -102,6 +105,9 @@ public class MatriculaServiceTest {
             fail("Não deu exception");
         } catch(Exception e){
             assertEquals("Aluno já está matriculado neste curso!", e.getMessage());
+            verify(alunoService).achaPorAlunoId((long)1);
+            verify(cursoService).achaCursoPorId((long)1);
+            verify(matriculaRepository).findAllByAluno_Id((long)1);
         }
     }
 
@@ -123,8 +129,18 @@ public class MatriculaServiceTest {
 
         CriaMatriculaResponse novaMatricula = matriculaService.matriculaAluno(criaMatricula);
 
+        Matricula matriculaFeita = Matricula.builder()
+        .id(novaMatricula.getId())
+        .aluno(novaMatricula.getAluno())
+        .curso(novaMatricula.getCurso())
+        .build();
+
         assertEquals(novaMatricula.getAluno().getNome(), "Lucas");
         assertEquals(novaMatricula.getCurso().getNome(), "Ciências da Computação");
+        verify(alunoService).achaPorAlunoId((long)1);
+        verify(cursoService).achaCursoPorId((long)1);
+        verify(matriculaRepository).findAllByAluno_Id((long)1);
+        verify(matriculaRepository).save(matriculaFeita);
     }
 
     @Test
@@ -137,6 +153,7 @@ public class MatriculaServiceTest {
 
         matriculaService.desmatriculaAluno(matriculaExistente.getId());
 
+        verify(matriculaRepository).findById(matriculaExistente.getId());
         verify(matriculaRepository).deleteById(matriculaExistente.getId());
     }
 

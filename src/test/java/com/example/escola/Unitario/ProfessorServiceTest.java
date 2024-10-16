@@ -2,6 +2,7 @@ package com.example.escola.Unitario;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
@@ -54,6 +55,7 @@ public class ProfessorServiceTest {
 
         assertEquals(resultado.get(0).getNome(), "Lucas");
         assertEquals(resultado.get(1).getNome(), "Pedro");
+        verify(cursoService).achaCursoPorId(curso.getId());
         
     }
 
@@ -70,6 +72,7 @@ public class ProfessorServiceTest {
             fail("Não deu exception");
         } catch(Exception e){
             assertEquals("Curso 1 não encontrado", e.getMessage());
+            verify(cursoService).achaCursoPorId((long)1);
         }
     }
 
@@ -83,7 +86,15 @@ public class ProfessorServiceTest {
 
         CriaProfessorResponse novoProfessor = professorService.criaNovoProfessor(criaProfessor);
 
+        Professor professorCriado = Professor.builder()
+        .id(novoProfessor.getId())
+        .nome(novoProfessor.getNome())
+        .cursos(novoProfessor.getCursos())
+        .build();
+
         assertEquals(novoProfessor.getNome(), "Lucas");
+        verify(cursoService).achaTodosPorCursoId(List.of());
+        verify(professorRepository).save(professorCriado);
     }
 
     @Test
@@ -104,8 +115,17 @@ public class ProfessorServiceTest {
 
         CriaProfessorResponse novoProfessor = professorService.criaNovoProfessor(criaProfessor);
 
+        Professor professorCriado = Professor.builder()
+        .id(novoProfessor.getId())
+        .nome(novoProfessor.getNome())
+        .cursos(novoProfessor.getCursos())
+        .build();
+
         assertEquals(novoProfessor.getNome(), "Lucas");
         assertEquals(novoProfessor.getCursos().get(0).getNome(), "Ciências da Computação");
+        verify(cursoService).achaCursoPorId((long)1);
+        verify(cursoService).achaTodosPorCursoId(List.of((long)1));
+        verify(professorRepository).save(professorCriado);
     }
 
     @Test
@@ -137,8 +157,18 @@ public class ProfessorServiceTest {
         
         AtualizaProfessorResponse professorAtt = professorService.atualizaProfessor(professorExistente.getId(), atualizaProfessor);
 
+        Professor professorAtualizado = Professor.builder()
+        .id(professorAtt.getId())
+        .nome(professorAtt.getNome())
+        .cursos(professorAtt.getCursos())
+        .build();
+
         assertEquals("Pedro", professorAtt.getNome());
         assertEquals("Matemática", professorAtt.getCursos().get(0).getNome());
+        verify(professorRepository).findById(professorExistente.getId());
+        verify(cursoService).achaCursoPorId((long)2);
+        verify(cursoService).achaTodosPorCursoId(List.of((long)2));
+        verify(professorRepository).save(professorAtualizado);
     }
 
     

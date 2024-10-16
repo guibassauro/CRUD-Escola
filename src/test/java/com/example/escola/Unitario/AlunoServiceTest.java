@@ -82,6 +82,8 @@ public class AlunoServiceTest {
         List<Aluno> listaDeAlunos = alunoService.achaTodosOsAlunosDeUmCurso((long)1);
 
         assertEquals(listaDeAlunos.get(0).getNome(), "Lucas");
+        verify(cursoService).achaCursoPorId((long)1);
+        verify(matriculaService).achaTodasPorCursoId((long)1);
     }
 
     @Test
@@ -95,6 +97,7 @@ public class AlunoServiceTest {
             fail("Não deu exception");
         } catch(Exception e){
             assertEquals("Curso não encontrado!", e.getMessage());
+            verify(cursoService).achaCursoPorId((long)2);
         }
     }
 
@@ -104,9 +107,14 @@ public class AlunoServiceTest {
         CriaAlunoRequest criaAluno = CriaAlunoRequest.builder()
         .nome("Pedro").build();
 
+        Aluno alunoNovo = Aluno.builder()
+        .nome(criaAluno.getNome()).idade(criaAluno.getIdade()).build();
+
         CriaAlunoResponse novoAluno = alunoService.criaNovoAluno(criaAluno);
 
         assertEquals(novoAluno.getNome(), "Pedro");
+        verify(alunoRepository).findByEmail(criaAluno.getEmail());
+        verify(alunoRepository).save(alunoNovo);
     }
 
     @Test
@@ -126,6 +134,7 @@ public class AlunoServiceTest {
             fail("Não deu exception");
         } catch(Exception e){
             assertEquals("Email já cadastrado!", e.getMessage());
+            verify(alunoRepository).findByEmail(criaAluno.getEmail());
         }
     }
 
@@ -153,6 +162,7 @@ public class AlunoServiceTest {
         assertEquals("Lucas", alunoAtualizado.getNome());
         assertEquals(22, alunoAtualizado.getIdade());
         assertEquals("Masculino", alunoExistente.getGenero());
+        verify(alunoRepository).findById((long)1);
     }
 
     @Test
@@ -174,6 +184,7 @@ public class AlunoServiceTest {
         } catch(Exception e){
             assertEquals("Aluno não encontrado!", e.getMessage());
             assertEquals(alunoExistente.getNome(), "Pedro");
+            verify(alunoRepository).findById((long)2);
         }
     }
 
@@ -188,6 +199,8 @@ public class AlunoServiceTest {
 
         alunoService.deletaAluno((long)1);
 
+        verify(alunoRepository).findById((long)1);
+        verify(matriculaService).achaTodosPorAlunoId((long)1);
         verify(alunoRepository).deleteById((long)1);
     }
 
@@ -203,6 +216,7 @@ public class AlunoServiceTest {
             fail("Não deu exception");
         } catch(Exception e){
             assertEquals("Aluno não encontrado!", e.getMessage());
+            verify(alunoRepository).findById((long)2);
         }
     }
 
@@ -223,6 +237,8 @@ public class AlunoServiceTest {
             fail("Não deu Exception");
         } catch(Exception e){
             assertEquals("Você não pode deletar um aluno com matriculas em andamento", e.getMessage());
+            verify(alunoRepository).findById((long)1);
+            verify(matriculaService).achaTodosPorAlunoId((long)1);
         }
     }
 }

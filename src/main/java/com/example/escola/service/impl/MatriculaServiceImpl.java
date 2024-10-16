@@ -74,7 +74,6 @@ public class MatriculaServiceImpl implements MatriculaService{
             throw new NotFoundException("Matricula não encontrada");
         }
 
-
         matriculaRepository.deleteById(matricula_id);
     }
 
