@@ -12,8 +12,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.escola.controller.AlunoController;
-import com.example.escola.dto.AtualizaAlunoRequest;
-import com.example.escola.dto.CriaAlunoRequest;
+import com.example.escola.dto.Request.AtualizaAlunoRequest;
+import com.example.escola.dto.Request.CriaAlunoRequest;
 import com.example.escola.service.AlunoService;
 
 import lombok.RequiredArgsConstructor;

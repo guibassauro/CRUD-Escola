@@ -6,8 +6,10 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
-import com.example.escola.dto.AtualizaAlunoRequest;
-import com.example.escola.dto.CriaAlunoRequest;
+import com.example.escola.dto.Request.AtualizaAlunoRequest;
+import com.example.escola.dto.Request.CriaAlunoRequest;
+import com.example.escola.dto.Response.AtualizarAlunoResponse;
+import com.example.escola.dto.Response.CriaAlunoResponse;
 import com.example.escola.exception.BadRequestException;
 import com.example.escola.exception.NotFoundException;
 import com.example.escola.model.Aluno;
@@ -52,50 +54,53 @@ public class AlunoServiceImpl implements AlunoService{
     }
 
     @Override
-    public Aluno criaNovoAluno(CriaAlunoRequest criaAluno){
+    public CriaAlunoResponse criaNovoAluno(CriaAlunoRequest criaAluno){
         Optional<Aluno> existeAluno = alunoRepository.findByEmail(criaAluno.getEmail());
 
         if(existeAluno.isPresent()){
             throw new BadRequestException("Email já cadastrado!");
         }
 
-        Aluno novoAluno = new Aluno();
+        Aluno novoAluno = Aluno.builder()
+        .nome(criaAluno.getNome())
+        .email(criaAluno.getEmail())
+        .idade(criaAluno.getIdade()).build();
 
-        novoAluno.setNome(criaAluno.getNome());
-        novoAluno.setIdade(criaAluno.getIdade());
-        novoAluno.setEmail(criaAluno.getEmail());
-        novoAluno.setGenero(criaAluno.getGenero());
+        CriaAlunoResponse resposta = CriaAlunoResponse.builder()
+        .nome(novoAluno.getNome())
+        .email(novoAluno.getEmail())
+        .idade(novoAluno.getIdade())
+        .build();
 
-        alunoRepository.save(novoAluno);
-
-        return novoAluno;
+        return resposta;
     }
 
     @Override
-    public Aluno atualizaAluno(Long aluno_id, AtualizaAlunoRequest atualizaAluno){
+    public AtualizarAlunoResponse atualizaAluno(Long aluno_id, AtualizaAlunoRequest atualizaAluno){
         Optional<Aluno> existeAluno = alunoRepository.findById(aluno_id);
 
         if(existeAluno.isEmpty()){
             throw new NotFoundException("Aluno não encontrado!");
         }
 
-        Aluno atualizarAluno = existeAluno.get();
-
-        if(atualizaAluno.getNome() != null){
-            atualizarAluno.setNome(atualizaAluno.getNome());
-        }
-
-        if(atualizaAluno.getIdade() != null){
-            atualizarAluno.setIdade(atualizaAluno.getIdade());
-        }
-
-        if(atualizaAluno.getGenero() != null){
-            atualizarAluno.setGenero(atualizaAluno.getGenero());
-        }
+        Aluno atualizarAluno = Aluno.builder()
+        .id(existeAluno.get().getId())
+        .nome(atualizaAluno.getNome() != null ? atualizaAluno.getNome() : existeAluno.get().getNome())
+        .idade(atualizaAluno.getIdade() != null ? atualizaAluno.getIdade() : existeAluno.get().getIdade())
+        .genero(atualizaAluno.getGenero() != null ? atualizaAluno.getGenero() : existeAluno.get().getGenero())
+        .email(existeAluno.get().getEmail()).build();
 
         alunoRepository.save(atualizarAluno);
 
-        return atualizarAluno;
+        
+        AtualizarAlunoResponse resposta = AtualizarAlunoResponse.builder()
+        .id(atualizarAluno.getId())
+        .nome(atualizarAluno.getNome())
+        .idade(atualizarAluno.getIdade())
+        .email(atualizarAluno.getEmail())
+        .build();
+
+        return resposta;
     }
 
     @Override

@@ -1,7 +1,9 @@
 package com.example.escola.controller;
 
 import org.springframework.http.ResponseEntity;
-import com.example.escola.dto.CriaMatriculaRequest;
+
+import com.example.escola.dto.Request.CriaMatriculaRequest;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

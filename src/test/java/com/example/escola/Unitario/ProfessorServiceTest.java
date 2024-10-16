@@ -14,8 +14,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.example.escola.dto.AtualizaProfessorRequest;
-import com.example.escola.dto.CriaProfessorRequest;
+import com.example.escola.dto.Request.AtualizaProfessorRequest;
+import com.example.escola.dto.Request.CriaProfessorRequest;
+import com.example.escola.dto.Response.AtualizaProfessorResponse;
+import com.example.escola.dto.Response.CriaProfessorResponse;
 import com.example.escola.model.Curso;
 import com.example.escola.model.Professor;
 import com.example.escola.repository.CursoRepository;
@@ -38,13 +40,13 @@ public class ProfessorServiceTest {
     @Test
     @DisplayName("Deve retornar professores de um curso")
     void deveRetornarProfessoresPorCurso(){
-        Curso curso = new Curso();
-        Professor profe1 = new Professor();
-        Professor profe2 = new Professor();
-
-        profe1.setNome("Lucas");
-        profe2.setNome("Pedro");
-        curso.setProfessores(List.of(profe1, profe2));
+        Professor profe1 = Professor.builder()
+        .nome("Lucas").build();
+        Professor profe2 = Professor.builder()
+        .nome("Pedro").build();
+        Curso curso = Curso.builder()
+        .professores(List.of(profe1, profe2))
+        .build();
 
         when(cursoRepository.findById(curso.getId())).thenReturn(Optional.of(curso));
 
@@ -58,8 +60,8 @@ public class ProfessorServiceTest {
     @Test
     @DisplayName("Deve retornar exception formatada")
     void deveRetornarExceptionFormatada(){
-        CriaProfessorRequest criaProfessor = new CriaProfessorRequest();
-        criaProfessor.setCursos_id(List.of((long)1));
+        CriaProfessorRequest criaProfessor = CriaProfessorRequest.builder()
+        .cursos_id(List.of((long)1)).build();
         
         when(cursoRepository.findById((long)1)).thenReturn(Optional.empty());
 
@@ -67,18 +69,19 @@ public class ProfessorServiceTest {
             professorService.criaNovoProfessor(criaProfessor);
             fail("Não deu exception");
         } catch(Exception e){
-            assertEquals(e.getMessage(), "Curso 1 não encontrado");
+            assertEquals("Curso 1 não encontrado", e.getMessage());
         }
     }
 
     @Test
     @DisplayName("Deve criar um novo Professor sem cursos")
     void criaNovoProfessor(){
-        CriaProfessorRequest criaProfessor = new CriaProfessorRequest();
-        criaProfessor.setNome("Lucas");
-        criaProfessor.setCursos_id(List.of());
+        CriaProfessorRequest criaProfessor = CriaProfessorRequest.builder()
+        .nome("Lucas")
+        .cursos_id(List.of())
+        .build();
 
-        Professor novoProfessor = professorService.criaNovoProfessor(criaProfessor);
+        CriaProfessorResponse novoProfessor = professorService.criaNovoProfessor(criaProfessor);
 
         assertEquals(novoProfessor.getNome(), "Lucas");
     }
@@ -86,18 +89,20 @@ public class ProfessorServiceTest {
     @Test
     @DisplayName("Deve criar um novo professor com cursos")
     void criaNovoProfessorComCursos(){
-        Curso curso1 = new Curso();
-        curso1.setId((long)1);
-        curso1.setNome("Ciências da Computação");
+        Curso curso1 = Curso.builder()
+        .id((long)1)
+        .nome("Ciências da Computação")
+        .build();
 
-        CriaProfessorRequest criaProfessor = new CriaProfessorRequest();
-        criaProfessor.setNome("Lucas");
-        criaProfessor.setCursos_id(List.of(curso1.getId()));
+        CriaProfessorRequest criaProfessor = CriaProfessorRequest.builder()
+        .nome("Lucas")
+        .cursos_id(List.of((long)1))
+        .build();
 
         when(cursoRepository.findAllById(criaProfessor.getCursos_id())).thenReturn(List.of(curso1));
         when(cursoRepository.findById((long)1)).thenReturn(Optional.of(curso1));
 
-        Professor novoProfessor = professorService.criaNovoProfessor(criaProfessor);
+        CriaProfessorResponse novoProfessor = professorService.criaNovoProfessor(criaProfessor);
 
         assertEquals(novoProfessor.getNome(), "Lucas");
         assertEquals(novoProfessor.getCursos().get(0).getNome(), "Ciências da Computação");
@@ -106,35 +111,34 @@ public class ProfessorServiceTest {
     @Test
     @DisplayName("Testa atualizar professor mudando os seus cursos")
     void deveAtualizarProfessorValidoMudandoOsCursos(){
-        Curso curso1 = new Curso();
-        curso1.setId((long)1);
-        curso1.setNome("Ciências da Computação");
+        Curso curso = Curso.builder()
+        .id((long)1)
+        .nome("Ciências da Computação")
+        .build();
 
-        Curso curso2 = new Curso();
-        curso2.setId((long)2);
-        curso2.setNome("Matemática");
+        Curso curso2 = Curso.builder()
+        .id((long)2)
+        .nome("Matemática")
+        .build();
 
-        Professor professorExistente = new Professor();
-        professorExistente.setNome("Lucas");
-        professorExistente.setCursos(List.of(curso1));
+        Professor professorExistente = Professor.builder()
+        .id((long)1)
+        .nome("Lucas")
+        .cursos(List.of(curso))
+        .build();
 
-        AtualizaProfessorRequest atualizaProfessor = new AtualizaProfessorRequest();
-        atualizaProfessor.setNome("Pedro");
-        atualizaProfessor.setCursos_id(List.of((long)2));
+        AtualizaProfessorRequest atualizaProfessor = AtualizaProfessorRequest.builder()
+        .nome("Pedro")
+        .cursos_id(List.of((long)2)).build();
 
-        when(professorRepository.findById(professorExistente.getId()))
-                                .thenReturn(Optional.of(professorExistente));
-
-        when(cursoRepository.findAllById(atualizaProfessor.getCursos_id()))
-                                .thenReturn(List.of(curso2));
-
-        when(cursoRepository.findById((long)2))
-                                .thenReturn(Optional.of(curso2));
+        when(professorRepository.findById((long)1)).thenReturn(Optional.of(professorExistente));
+        when(cursoRepository.findAllById(atualizaProfessor.getCursos_id())).thenReturn(List.of(curso2));
+        when(cursoRepository.findById((long)2)).thenReturn(Optional.of(curso2));
         
-        professorService.atualizaProfessor(professorExistente.getId(), atualizaProfessor);
+        AtualizaProfessorResponse professorAtt = professorService.atualizaProfessor(professorExistente.getId(), atualizaProfessor);
 
-        assertEquals(professorExistente.getNome(), "Pedro");
-        assertEquals(professorExistente.getCursos().get(0).getNome(), "Matemática");
+        assertEquals("Pedro", professorAtt.getNome());
+        assertEquals("Matemática", professorAtt.getCursos().get(0).getNome());
     }
 
     

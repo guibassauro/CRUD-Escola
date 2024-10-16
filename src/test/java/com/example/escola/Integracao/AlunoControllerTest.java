@@ -13,8 +13,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import com.example.escola.dto.AtualizaAlunoRequest;
-import com.example.escola.dto.CriaAlunoRequest;
+import com.example.escola.dto.Request.AtualizaAlunoRequest;
+import com.example.escola.dto.Request.CriaAlunoRequest;
 import com.example.escola.model.Aluno;
 import com.example.escola.model.Curso;
 import com.example.escola.model.Matricula;

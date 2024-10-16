@@ -14,8 +14,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import com.example.escola.dto.AtualizaCursoRequest;
-import com.example.escola.dto.CriaCursoRequest;
+import com.example.escola.dto.Request.AtualizaCursoRequest;
+import com.example.escola.dto.Request.CriaCursoRequest;
 import com.example.escola.model.Aluno;
 import com.example.escola.model.Curso;
 import com.example.escola.model.Matricula;

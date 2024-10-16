@@ -2,8 +2,8 @@ package com.example.escola.controller;
 
 import org.springframework.http.ResponseEntity;
 
-import com.example.escola.dto.AtualizaAlunoRequest;
-import com.example.escola.dto.CriaAlunoRequest;
+import com.example.escola.dto.Request.AtualizaAlunoRequest;
+import com.example.escola.dto.Request.CriaAlunoRequest;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

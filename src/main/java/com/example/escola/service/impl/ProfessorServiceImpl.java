@@ -5,8 +5,10 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
-import com.example.escola.dto.AtualizaProfessorRequest;
-import com.example.escola.dto.CriaProfessorRequest;
+import com.example.escola.dto.Request.AtualizaProfessorRequest;
+import com.example.escola.dto.Request.CriaProfessorRequest;
+import com.example.escola.dto.Response.AtualizaProfessorResponse;
+import com.example.escola.dto.Response.CriaProfessorResponse;
 import com.example.escola.exception.NotFoundException;
 import com.example.escola.model.Curso;
 import com.example.escola.model.Professor;
@@ -40,7 +42,7 @@ public class ProfessorServiceImpl implements ProfessorService{
     }
 
     @Override
-    public Professor criaNovoProfessor(CriaProfessorRequest criaProfessor){
+    public CriaProfessorResponse criaNovoProfessor(CriaProfessorRequest criaProfessor){
         
         criaProfessor.getCursos_id().forEach(curso_id -> {
             Optional<Curso> existeCurso = cursoRepository.findById(curso_id);
@@ -51,49 +53,60 @@ public class ProfessorServiceImpl implements ProfessorService{
 
         List<Curso> listaDeCursos = cursoRepository.findAllById(criaProfessor.getCursos_id());
         
-        Professor novoProfessor = new Professor();
-
-        novoProfessor.setNome(criaProfessor.getNome());
-        novoProfessor.setIdade(criaProfessor.getIdade());
-        novoProfessor.setCursos(listaDeCursos);
+        Professor novoProfessor = Professor.builder()
+        .nome(criaProfessor.getNome())
+        .idade(criaProfessor.getIdade())
+        .cursos(listaDeCursos)
+        .build();
 
         professorRepository.save(novoProfessor);
-        return novoProfessor;
+        
+        CriaProfessorResponse resposta = CriaProfessorResponse.builder()
+        .id(novoProfessor.getId())
+        .nome(novoProfessor.getNome())
+        .idade(novoProfessor.getIdade())
+        .cursos(novoProfessor.getCursos())
+        .build();
+
+        return resposta;
     }
 
     @Override
-    public Professor atualizaProfessor(Long professor_id, AtualizaProfessorRequest atualizaProfessor){
+    public AtualizaProfessorResponse atualizaProfessor(Long professor_id, AtualizaProfessorRequest atualizaProfessor){
         Optional<Professor> existeProfessor = professorRepository.findById(professor_id);
 
         if(existeProfessor.isEmpty()){
             throw new NotFoundException("Professor não encontrado!");
         }
 
-        Professor professorAtualizado = existeProfessor.get();
-
-        if(atualizaProfessor.getNome() != null){
-            professorAtualizado.setNome(atualizaProfessor.getNome());
-        }
-
-        if(atualizaProfessor.getIdade() != null){
-            professorAtualizado.setIdade(atualizaProfessor.getIdade());
-        }
-
-        if(atualizaProfessor.getCursos_id() != null){
-            
+        if(!atualizaProfessor.getCursos_id().isEmpty()){
             atualizaProfessor.getCursos_id().forEach(curso_id -> {
                 Optional<Curso> existeCurso = cursoRepository.findById(curso_id);
                 if(existeCurso.isEmpty()){
-                    throw new NotFoundException("Curso " + curso_id + " não encontrado");
+                    throw new NotFoundException("Curso não encontrado");
                 }
             });
-
-            List<Curso> listaDCursos = cursoRepository.findAllById(atualizaProfessor.getCursos_id());
-            professorAtualizado.setCursos(listaDCursos);
         }
+
+        List<Curso> listaDeCursos = cursoRepository.findAllById(atualizaProfessor.getCursos_id());
+
+        Professor professorAtualizado = Professor.builder()
+        .id(existeProfessor.get().getId())
+        .nome(atualizaProfessor.getNome() != null ? atualizaProfessor.getNome() : existeProfessor.get().getNome())
+        .idade(atualizaProfessor.getIdade() != null ? atualizaProfessor.getIdade() : existeProfessor.get().getIdade())
+        .cursos(!atualizaProfessor.getCursos_id().isEmpty() ? listaDeCursos : existeProfessor.get().getCursos())
+        .build();
+        
 
         professorRepository.save(professorAtualizado);
 
-        return professorAtualizado;
+        AtualizaProfessorResponse resposta = AtualizaProfessorResponse.builder()
+        .id(professorAtualizado.getId())
+        .nome(professorAtualizado.getNome())
+        .idade(professorAtualizado.getIdade())
+        .cursos(professorAtualizado.getCursos())
+        .build();
+
+        return resposta;
     }
 }

@@ -12,8 +12,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.escola.controller.CursoController;
-import com.example.escola.dto.AtualizaCursoRequest;
-import com.example.escola.dto.CriaCursoRequest;
+import com.example.escola.dto.Request.AtualizaCursoRequest;
+import com.example.escola.dto.Request.CriaCursoRequest;
 import com.example.escola.service.CursoService;
 
 import lombok.RequiredArgsConstructor;

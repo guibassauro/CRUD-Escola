@@ -1,15 +1,11 @@
-package com.example.escola.dto;
+package com.example.escola.dto.Request;
 
 import java.util.List;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Value;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
+@Value
 @Builder
 public class AtualizaProfessorRequest {
     

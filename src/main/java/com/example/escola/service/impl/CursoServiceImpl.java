@@ -5,8 +5,10 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
-import com.example.escola.dto.AtualizaCursoRequest;
-import com.example.escola.dto.CriaCursoRequest;
+import com.example.escola.dto.Request.AtualizaCursoRequest;
+import com.example.escola.dto.Request.CriaCursoRequest;
+import com.example.escola.dto.Response.AtualizaCursoResponse;
+import com.example.escola.dto.Response.CriaCursoResponse;
 import com.example.escola.exception.BadRequestException;
 import com.example.escola.exception.NotFoundException;
 import com.example.escola.model.Curso;
@@ -30,7 +32,7 @@ public class CursoServiceImpl implements CursoService{
     }
 
     @Override
-    public Curso criaNovoCurso(CriaCursoRequest criaCurso){
+    public CriaCursoResponse criaNovoCurso(CriaCursoRequest criaCurso){
 
         Curso novoCurso = Curso.builder()
         .nome(criaCurso.getNome())
@@ -40,30 +42,41 @@ public class CursoServiceImpl implements CursoService{
 
         cursoRepository.save(novoCurso);
 
-        return novoCurso;
+        CriaCursoResponse resposta = CriaCursoResponse.builder()
+        .id(novoCurso.getId())
+        .nome(novoCurso.getNome())
+        .descricao(novoCurso.getDescricao())
+        .cargaHoraria(novoCurso.getCarga_horaria())
+        .build();
+
+        return resposta;
     }
 
     @Override
-    public Curso atualizaCurso(Long curso_id, AtualizaCursoRequest atualizaCurso){
+    public AtualizaCursoResponse atualizaCurso(Long curso_id, AtualizaCursoRequest atualizaCurso){
         Optional<Curso> existeCurso = cursoRepository.findById(curso_id);
 
         if(existeCurso.isEmpty()){
             throw new NotFoundException("Curso não encontrado!");
         }
 
-        Curso cursoParaAtualizar = existeCurso.get();
-
-        if(atualizaCurso.getDescricao() != null){
-            cursoParaAtualizar.setDescricao(atualizaCurso.getDescricao());
-        }
-
-        if(atualizaCurso.getCarga_horaria() != null){
-            cursoParaAtualizar.setCarga_horaria(atualizaCurso.getCarga_horaria());
-        }
+        Curso cursoParaAtualizar = Curso.builder()
+        .id(existeCurso.get().getId())
+        .nome(existeCurso.get().getNome())
+        .descricao(atualizaCurso.getDescricao() != null ? atualizaCurso.getDescricao() : existeCurso.get().getDescricao())
+        .carga_horaria(atualizaCurso.getCarga_horaria() != null ? atualizaCurso.getCarga_horaria() : existeCurso.get().getCarga_horaria())
+        .build();
 
         cursoRepository.save(cursoParaAtualizar);
 
-        return cursoParaAtualizar;
+        AtualizaCursoResponse resposta = AtualizaCursoResponse.builder()
+        .id(cursoParaAtualizar.getId())
+        .nome(cursoParaAtualizar.getNome())
+        .descricao(cursoParaAtualizar.getDescricao())
+        .cargaHoraria(cursoParaAtualizar.getCarga_horaria())
+        .build();
+
+        return resposta;
     }
 
     @Override

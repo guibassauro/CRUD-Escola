@@ -14,8 +14,10 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 import java.util.Optional;
 
-import com.example.escola.dto.AtualizaCursoRequest;
-import com.example.escola.dto.CriaCursoRequest;
+import com.example.escola.dto.Request.AtualizaCursoRequest;
+import com.example.escola.dto.Request.CriaCursoRequest;
+import com.example.escola.dto.Response.AtualizaCursoResponse;
+import com.example.escola.dto.Response.CriaCursoResponse;
 import com.example.escola.model.Curso;
 import com.example.escola.model.Matricula;
 import com.example.escola.repository.CursoRepository;
@@ -38,10 +40,10 @@ public class CursoServiceTest {
     @Test
     @DisplayName("Testa o acharTodos do Curso")
     void deveRetornarTodosOsCursos(){
-        Curso curso1 = new Curso();
-        Curso curso2 = new Curso();
-        curso1.setNome("Ciências da Computação");
-        curso2.setNome("Biologia");
+        Curso curso1 = Curso.builder()
+        .nome("Ciências da Computação").build();
+        Curso curso2 = Curso.builder()
+        .nome("Biologia").build();
 
         when(cursoRepository.findAll()).thenReturn(List.of(curso1, curso2));
 
@@ -49,17 +51,22 @@ public class CursoServiceTest {
 
         assertEquals(resultado.get(0).getNome(), "Ciências da Computação");
         assertEquals(resultado.get(1).getNome(), "Biologia");
+        verify(cursoRepository).findAll();
     }
 
     @Test
     @DisplayName("Testa criar novo Curso")
     void deveCriarNovoCurso(){
-        CriaCursoRequest criaCurso = new CriaCursoRequest();
-        criaCurso.setNome("Lucas");
+        CriaCursoRequest criaCurso = CriaCursoRequest.builder()
+        .nome("Ciências da Computação").build();
 
-        Curso novoCurso = cursoService.criaNovoCurso(criaCurso);
+        Curso curso = Curso.builder()
+        .nome(criaCurso.getNome()).build();
 
-        assertEquals(novoCurso.getNome(), "Lucas");
+        CriaCursoResponse novoCurso = cursoService.criaNovoCurso(criaCurso);
+
+        assertEquals("Ciências da Computação", novoCurso.getNome());
+        verify(cursoRepository).save(curso);
     }
 
     @Test
@@ -79,17 +86,18 @@ public class CursoServiceTest {
     @Test
     @DisplayName("Testa se atualiza um Curso valido")
     void deveAtualizarCursoValido(){
-        Curso cursoExistente = new Curso();
-        cursoExistente.setDescricao("Ciências da Computation");
+        Curso cursoExistente = Curso.builder()
+        .id((long)1)
+        .descricao("Ciências da Computation").build();
 
-        AtualizaCursoRequest atualizaCurso = new AtualizaCursoRequest();
-        atualizaCurso.setDescricao("Ciências da Computação");
+        AtualizaCursoRequest atualizaCurso = AtualizaCursoRequest.builder()
+        .descricao("Ciências da Computação").build();
 
-        when(cursoRepository.findById(cursoExistente.getId())).thenReturn(Optional.of(cursoExistente));
+        when(cursoRepository.findById((long)1)).thenReturn(Optional.of(cursoExistente));
 
-        cursoService.atualizaCurso(cursoExistente.getId(), atualizaCurso);
+        AtualizaCursoResponse resposta = cursoService.atualizaCurso(cursoExistente.getId(), atualizaCurso);
 
-        assertEquals(cursoExistente.getDescricao(), "Ciências da Computação");
+        assertEquals("Ciências da Computação", resposta.getDescricao());
     }
 
     @Test
@@ -116,7 +124,8 @@ public class CursoServiceTest {
     @Test
     @DisplayName("Testa se deleta Curso válido")
     void deveDeletarCursoValido(){
-        Curso cursoExistente = new Curso();
+        Curso cursoExistente = Curso.builder()
+        .nome("Biologia").build();
 
         when(cursoRepository.findById(cursoExistente.getId())).thenReturn(Optional.of(cursoExistente));
 

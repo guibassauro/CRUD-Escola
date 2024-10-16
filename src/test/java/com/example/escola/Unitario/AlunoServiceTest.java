@@ -15,8 +15,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import com.example.escola.dto.AtualizaAlunoRequest;
-import com.example.escola.dto.CriaAlunoRequest;
+
+import com.example.escola.dto.Request.AtualizaAlunoRequest;
+import com.example.escola.dto.Request.CriaAlunoRequest;
+import com.example.escola.dto.Response.AtualizarAlunoResponse;
+import com.example.escola.dto.Response.CriaAlunoResponse;
 import com.example.escola.model.Aluno;
 import com.example.escola.model.Curso;
 import com.example.escola.model.Matricula;
@@ -52,11 +55,11 @@ public class AlunoServiceTest {
     @Test
     @DisplayName("Teste para verificar funcionamento do GetMapping geral")
     void deveVerificarOFindAll(){
-        Aluno aluno1 = new Aluno();
-        aluno1.setNome("Pedro");
+        Aluno aluno1 = Aluno.builder()
+        .nome("Pedro").build();
 
-        Aluno aluno2 = new Aluno();
-        aluno2.setNome("Lucas");
+        Aluno aluno2 = Aluno.builder()
+        .nome("Lucas").build();
 
         when(alunoRepository.findAll())
                             .thenReturn(List.of(aluno1, aluno2));
@@ -66,6 +69,7 @@ public class AlunoServiceTest {
         assertNotNull(resultado);
         assertEquals("Pedro", resultado.get(0).getNome());
         assertEquals("Lucas", resultado.get(1).getNome());
+        verify(alunoRepository).findAll();
     }
 
     @Test
@@ -105,9 +109,10 @@ public class AlunoServiceTest {
     @Test
     @DisplayName("Teste para criar novo Aluno")
     void deveCriarAlunoValido(){
-        CriaAlunoRequest criaAluno = new CriaAlunoRequest("Pedro", 22, "pedro@gmaile.com", "masculino");
+        CriaAlunoRequest criaAluno = CriaAlunoRequest.builder()
+        .nome("Pedro").build();
 
-        Aluno novoAluno = alunoService.criaNovoAluno(criaAluno);
+        CriaAlunoResponse novoAluno = alunoService.criaNovoAluno(criaAluno);
 
         assertEquals(novoAluno.getNome(), "Pedro");
     }
@@ -115,14 +120,14 @@ public class AlunoServiceTest {
     @Test
     @DisplayName("Teste para garantir que a exception é lançada ao tentar utilizar um email já cadastrado")
     void deveLancarExcepitonParaEmailRepetido(){
-        CriaAlunoRequest criaAluno = new CriaAlunoRequest();
-        criaAluno.setEmail("email@email.com");
+        CriaAlunoRequest criaAluno = CriaAlunoRequest.builder()
+        .email("email@email.com").build();
 
-        Aluno alunoJaExistente = new Aluno();
-        alunoJaExistente.setEmail("email@email.com");
+        Aluno alunoExistente = Aluno.builder()
+        .email("email@email.com").build();
 
         when(alunoRepository.findByEmail(criaAluno.getEmail()))
-                            .thenReturn(Optional.of(alunoJaExistente));
+                            .thenReturn(Optional.of(alunoExistente));
 
         try{
             alunoService.criaNovoAluno(criaAluno);
@@ -135,31 +140,38 @@ public class AlunoServiceTest {
     @Test
     @DisplayName("Teste para atualizar aluno existente")
     void deveAtualizarAluno(){
-        AtualizaAlunoRequest atualizaAluno = new AtualizaAlunoRequest();
-        atualizaAluno.setNome("Lucas");
+        AtualizaAlunoRequest atualizaAluno = AtualizaAlunoRequest.builder()
+        .nome("Lucas")
+        .idade(22)
+        .genero(null)
+        .build();
 
-        Aluno alunoJaExistente = new Aluno();
-        alunoJaExistente.setId((long) 1);
-        alunoJaExistente.setNome("Pedro");
+        Aluno alunoExistente = Aluno.builder()
+        .id((long)1)
+        .nome("Pedro")
+        .idade(23)
+        .genero("Masculino")
+        .build();
 
-        when(alunoRepository.findById(alunoJaExistente.getId()))
-                            .thenReturn(Optional.of(alunoJaExistente));
+        when(alunoRepository.findById(alunoExistente.getId()))
+                            .thenReturn(Optional.of(alunoExistente));
 
-        alunoService.atualizaAluno((long)1, atualizaAluno);
+        AtualizarAlunoResponse alunoAtualizado = alunoService.atualizaAluno((long)1, atualizaAluno);
 
-        assertEquals(alunoJaExistente.getNome(), "Lucas");
+        assertEquals("Lucas", alunoAtualizado.getNome());
+        assertEquals(22, alunoAtualizado.getIdade());
+        assertEquals("Masculino", alunoExistente.getGenero());
     }
 
     @Test
     @DisplayName("Garantir Exception caso o id não exista no banco")
     void deveLancarExcepitonParaAlunoNãoExistente(){
 
-        AtualizaAlunoRequest atualizaAluno = new AtualizaAlunoRequest();
-        atualizaAluno.setNome("Lucas");
+        AtualizaAlunoRequest atualizaAluno = AtualizaAlunoRequest.builder()
+        .nome("Lucas").build();
         
-        Aluno alunoJaExistente = new Aluno();
-        alunoJaExistente.setId((long)1);
-        alunoJaExistente.setNome("Pedro");
+        Aluno alunoExistente = Aluno.builder()
+        .nome("Pedro").build();
 
         when(alunoRepository.findById((long)2))
                             .thenReturn(Optional.empty());
@@ -169,18 +181,18 @@ public class AlunoServiceTest {
             fail("Não deu exception!");
         } catch(Exception e){
             assertEquals("Aluno não encontrado!", e.getMessage());
-            assertEquals(alunoJaExistente.getNome(), "Pedro");
+            assertEquals(alunoExistente.getNome(), "Pedro");
         }
     }
 
     @Test
     @DisplayName("Teste para deletar o Aluno")
     void deveDeletarOAluno(){
-        Aluno alunoJaExistente = new Aluno();
-        alunoJaExistente.setId((long)1);
+        Aluno alunoExistente = Aluno.builder()
+        .id((long)1).build();
 
         when(alunoRepository.findById((long)1))
-                            .thenReturn(Optional.of(alunoJaExistente));
+                            .thenReturn(Optional.of(alunoExistente));
 
         alunoService.deletaAluno((long)1);
 
@@ -190,8 +202,6 @@ public class AlunoServiceTest {
     @Test
     @DisplayName("Deve testar a exception caso o Aluno não esteja no banco")
     void deveLançarException(){
-        Aluno alunoJaExistente = new Aluno();
-        alunoJaExistente.setId((long)1);
 
         when(alunoRepository.findById((long)2))
                             .thenReturn(Optional.empty());

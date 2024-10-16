@@ -5,7 +5,8 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
-import com.example.escola.dto.CriaMatriculaRequest;
+import com.example.escola.dto.Request.CriaMatriculaRequest;
+import com.example.escola.dto.Response.CriaMatriculaResponse;
 import com.example.escola.exception.BadRequestException;
 import com.example.escola.exception.NotFoundException;
 import com.example.escola.model.Aluno;
@@ -32,7 +33,7 @@ public class MatriculaServiceImpl implements MatriculaService{
     }
 
     @Override
-    public Matricula matriculaAluno(CriaMatriculaRequest criaMatricula){
+    public CriaMatriculaResponse matriculaAluno(CriaMatriculaRequest criaMatricula){
         Optional<Aluno> existeAluno = alunoRepository.findById(criaMatricula.getIdDoAluno());
         Optional<Curso> existeCurso = cursoRepository.findById(criaMatricula.getIdDoCurso());
         List<Matricula> matriculasDoAluno = matriculaRepository.findAllByAluno_Id(criaMatricula.getIdDoAluno());
@@ -51,13 +52,20 @@ public class MatriculaServiceImpl implements MatriculaService{
             }
         });
 
-        Matricula novaMatricula = new Matricula();
-        novaMatricula.setAluno(existeAluno.get());
-        novaMatricula.setCurso(existeCurso.get());
+        Matricula novaMatricula = Matricula.builder()
+        .aluno(existeAluno.get())
+        .curso(existeCurso.get())
+        .build();
 
         matriculaRepository.save(novaMatricula);
 
-        return novaMatricula;
+        CriaMatriculaResponse resposta = CriaMatriculaResponse.builder()
+        .id(novaMatricula.getId())
+        .aluno(novaMatricula.getAluno())
+        .curso(novaMatricula.getCurso())
+        .build();
+
+        return resposta;
     }
 
     @Override

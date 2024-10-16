@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.escola.controller.MatriculaController;
-import com.example.escola.dto.CriaMatriculaRequest;
+import com.example.escola.dto.Request.CriaMatriculaRequest;
 import com.example.escola.service.MatriculaService;
 
 import lombok.RequiredArgsConstructor;

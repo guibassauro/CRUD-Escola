@@ -15,7 +15,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.example.escola.dto.CriaMatriculaRequest;
+import com.example.escola.dto.Request.CriaMatriculaRequest;
+import com.example.escola.dto.Response.CriaMatriculaResponse;
 import com.example.escola.model.Aluno;
 import com.example.escola.model.Curso;
 import com.example.escola.model.Matricula;
@@ -44,8 +45,8 @@ public class MatriculaServiceTest {
     @Test
     @DisplayName("Testa se sai a exception de não achar o aluno")
     void deveRetornarNotFoundAluno(){
-        CriaMatriculaRequest criaMatricula = new CriaMatriculaRequest();
-        criaMatricula.setIdDoAluno((long)2);
+        CriaMatriculaRequest criaMatricula = CriaMatriculaRequest.builder()
+        .idDoAluno((long)2).build();
         
         when(alunoRepository.findById((long)2)).thenReturn(Optional.empty());
 
@@ -60,10 +61,10 @@ public class MatriculaServiceTest {
     @Test
     @DisplayName("Testa se sai a exception formatada de não achar o curso")
     void deveRetornarNotFoundCurso(){
-        Aluno alunoExistente = new Aluno();
-        alunoExistente.setId((long)1);
-        CriaMatriculaRequest criaMatricula = new CriaMatriculaRequest();
-        criaMatricula.setIdDoCurso((long)2);
+        Aluno alunoExistente = Aluno.builder()
+        .id((long)1).build();
+        CriaMatriculaRequest criaMatricula = CriaMatriculaRequest.builder()
+        .idDoCurso((long)2).build();
 
         when(alunoRepository.findById(criaMatricula.getIdDoAluno()))
                             .thenReturn(Optional.of(alunoExistente));
@@ -109,19 +110,20 @@ public class MatriculaServiceTest {
     @Test
     @DisplayName("Teste para matricular aluno")
     void deveRetornarMatriculaFeita(){
-        Aluno aluno = new Aluno();
-        aluno.setNome("Lucas");
-        Curso curso = new Curso();
-        curso.setNome("Ciências da Computação");
+        Aluno aluno = Aluno.builder()
+        .nome("Lucas").build();
+        Curso curso = Curso.builder()
+        .nome("Ciências da Computação").build();
 
-        CriaMatriculaRequest criaMatricula = new CriaMatriculaRequest();
-        criaMatricula.setIdDoAluno(aluno.getId());
-        criaMatricula.setIdDoCurso(curso.getId());
+        CriaMatriculaRequest criaMatricula = CriaMatriculaRequest.builder()
+        .idDoAluno(aluno.getId())
+        .idDoCurso(curso.getId())
+        .build();
 
         when(alunoRepository.findById(aluno.getId())).thenReturn(Optional.of(aluno));
         when(cursoRepository.findById(curso.getId())).thenReturn(Optional.of(curso));
 
-        Matricula novaMatricula = matriculaService.matriculaAluno(criaMatricula);
+        CriaMatriculaResponse novaMatricula = matriculaService.matriculaAluno(criaMatricula);
 
         assertEquals(novaMatricula.getAluno().getNome(), "Lucas");
         assertEquals(novaMatricula.getCurso().getNome(), "Ciências da Computação");
@@ -130,7 +132,7 @@ public class MatriculaServiceTest {
     @Test
     @DisplayName("Verifica se a matricula foi desfeita corretamente")
     void deveDesmatricularOAluno(){
-        Matricula matriculaExistente = new Matricula();
+        Matricula matriculaExistente = Matricula.builder().build();
 
         when(matriculaRepository.findById(matriculaExistente.getId()))
                                 .thenReturn(Optional.of(matriculaExistente));
