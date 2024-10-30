@@ -93,9 +93,8 @@ public class ProfessorServiceImpl implements ProfessorService{
         .id(existeProfessor.get().getId())
         .nome(atualizaProfessor.getNome() != null ? atualizaProfessor.getNome() : existeProfessor.get().getNome())
         .idade(atualizaProfessor.getIdade() != null ? atualizaProfessor.getIdade() : existeProfessor.get().getIdade())
-        .cursos(!atualizaProfessor.getCursos_id().isEmpty() ? listaDeCursos : existeProfessor.get().getCursos())
+        .cursos(!atualizaProfessor.getCursos_id().isEmpty() ? listaDeCursos : List.of())
         .build();
-        
 
         professorRepository.save(professorAtualizado);
 

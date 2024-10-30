@@ -1,44 +1,40 @@
 package com.example.escola.controller.impl;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.escola.controller.MatriculaController;
 import com.example.escola.dto.Request.CriaMatriculaRequest;
-import com.example.escola.service.MatriculaService;
-
+import com.example.escola.service.AlunoService;
+import com.example.escola.service.CursoService;
 import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
+@RestController 
 @RequestMapping("/matriculas")
-@RestController
+@RequiredArgsConstructor
 public class MatriculaControllerImpl implements MatriculaController{
-    
-    private final MatriculaService matriculaService;
+    private final AlunoService alunoService;
+    private final CursoService cursoService;
 
     @Override
     @GetMapping
-    public ResponseEntity<Object> achaTodasAsMatriculas(){
-        return ResponseEntity.ok().body(matriculaService.achaTodasAsMatriculas());
+    public ResponseEntity<Object> listaMatriculas(){
+        return ResponseEntity.ok().body(cursoService.listaMatriculas());
     }
 
     @Override
-    @PostMapping
+    @PatchMapping("/matricular")
     public ResponseEntity<Object> matriculaAluno(@RequestBody CriaMatriculaRequest criaMatricula){
-        return ResponseEntity.status(HttpStatus.CREATED).body(matriculaService.matriculaAluno(criaMatricula));
+        return ResponseEntity.ok().body(alunoService.matriculaAluno(criaMatricula));
     }
 
     @Override
-    @DeleteMapping("/{aluno_id}")
-    public ResponseEntity<Object> desmatriculaAluno(@PathVariable Long aluno_id){
-        matriculaService.desmatriculaAluno(aluno_id);
-        return ResponseEntity.ok().body("Aluno desmatriculado!");
+    @PatchMapping("/desmatricular")
+    public ResponseEntity<Object> desmatriculaAluno(@RequestBody CriaMatriculaRequest criaMatricula){
+        return ResponseEntity.ok().body(alunoService.desmatriculaAluno(criaMatricula));
     }
 }

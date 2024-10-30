@@ -18,11 +18,10 @@ import com.example.escola.dto.Request.AtualizaCursoRequest;
 import com.example.escola.dto.Request.CriaCursoRequest;
 import com.example.escola.dto.Response.AtualizaCursoResponse;
 import com.example.escola.dto.Response.CriaCursoResponse;
+import com.example.escola.model.Aluno;
 import com.example.escola.model.Curso;
-import com.example.escola.model.Matricula;
 import com.example.escola.repository.CursoRepository;
 import com.example.escola.service.impl.CursoServiceImpl;
-import com.example.escola.service.impl.MatriculaServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Testar Curso Service")
@@ -30,9 +29,6 @@ public class CursoServiceTest {
     
     @Mock
     private CursoRepository cursoRepository;
-
-    @Mock
-    private MatriculaServiceImpl matriculaService;
     
     @InjectMocks
     private CursoServiceImpl cursoService;
@@ -111,23 +107,21 @@ public class CursoServiceTest {
     @Test
     @DisplayName("Testa se sai Exception de não deixar deletar um curso com matriculas")
     void deveNegarDeletarCursoComMatriculas(){
+
+        Aluno alunoExistente = Aluno.builder()
+        .id((long)1).build();
         
         Curso cursoExistente = Curso.builder()
-        .id((long)1).nome("Biologia").build();
-
-        Matricula matriculaExistente = Matricula.builder()
-        .id((long)1).curso(cursoExistente).build();
+        .id((long)1).nome("Biologia").alunos(List.of(alunoExistente)).build();
 
         when(cursoRepository.findById((long)1)).thenReturn(Optional.of(cursoExistente));
-        when(matriculaService.achaTodasPorCursoId((long)1)).thenReturn(List.of(matriculaExistente));
 
         try{
             cursoService.deletaCurso(cursoExistente.getId());
             fail("Não deu Exception");
         } catch(Exception e){
-            assertEquals(e.getMessage(), "Você não pode excluir um curso com matriculas em andamento");
+            assertEquals(e.getMessage(), "Você não pode deletar um curso com matriculas");
             verify(cursoRepository).findById((long)1);
-            verify(matriculaService).achaTodasPorCursoId((long)1);
         }
     }
 
@@ -135,14 +129,13 @@ public class CursoServiceTest {
     @DisplayName("Testa se deleta Curso válido")
     void deveDeletarCursoValido(){
         Curso cursoExistente = Curso.builder()
-        .id((long)1).nome("Biologia").build();
+        .id((long)1).nome("Biologia").alunos(List.of()).professores(List.of()).build();
 
         when(cursoRepository.findById(cursoExistente.getId())).thenReturn(Optional.of(cursoExistente));
 
         cursoService.deletaCurso(cursoExistente.getId());
 
         verify(cursoRepository).findById((long)1);
-        verify(matriculaService).achaTodasPorCursoId((long)1);
         verify(cursoRepository).deleteById(cursoExistente.getId());
     }
 }

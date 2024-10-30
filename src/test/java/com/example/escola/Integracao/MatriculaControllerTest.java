@@ -1,10 +1,8 @@
 package com.example.escola.Integracao;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,92 +10,124 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import com.example.escola.dto.Request.CriaMatriculaRequest;
 import com.example.escola.model.Aluno;
 import com.example.escola.model.Curso;
-import com.example.escola.model.Matricula;
 import com.example.escola.repository.AlunoRepository;
 import com.example.escola.repository.CursoRepository;
-import com.example.escola.repository.MatriculaRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-@SpringBootTest
 @AutoConfigureMockMvc
+@SpringBootTest
 public class MatriculaControllerTest {
     
     @Autowired
-    private ObjectMapper mapper;
-
-    @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
-    private MatriculaRepository matriculaRepository;
+    private CursoRepository cursoRepository;
 
     @Autowired
     private AlunoRepository alunoRepository;
 
     @Autowired
-    private CursoRepository cursoRepository;
+    private MockMvc mockMvc;
 
-    @BeforeEach
-    public void criaDados(){
-        Aluno alunoExistente = Aluno.builder()
-        .id((long)1).nome("Lucas").idade(22)
-        .email("lucas@gmail.com").genero("Masculino")
-        .build();
-        alunoRepository.save(alunoExistente);
+    @Autowired
+    ObjectMapper mapper;
 
-        Curso cursoExistente = Curso.builder()
-        .id((long)1).nome("Ciências da Computação")
-        .descricao("Curso de Ciências da Computação")
-        .carga_horaria(2000).build();
-        cursoRepository.save(cursoExistente);
+    @Test
+    @DisplayName("Deve Matricular o aluno")
+    public void testeMatricular() throws Exception{
+        Aluno aluno = Aluno.builder()
+        .id((long)1).nome("João").build();
+
+        Curso curso = Curso.builder()
+        .id((long)1).nome("Biologia").build();
+
+        alunoRepository.save(aluno);
+        cursoRepository.save(curso);
+
+        CriaMatriculaRequest criaMatricula = CriaMatriculaRequest.builder()
+        .aluno_id(aluno.getId()).curso_id(curso.getId()).build();
+
+        String json = mapper.writeValueAsString(criaMatricula);
+
+        mockMvc.perform(MockMvcRequestBuilders.patch("/matriculas/matricular")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(json))
+        .andExpect(status().isOk())
+        .andExpect(content().string("João foi matriculado no curso Biologia."));
     }
 
     @Test
-    @DisplayName("Testa se cria matricula")
-    public void testeDadoMatriculaValida_QuandoSalvar_DeveRetornar201() throws Exception{
-        CriaMatriculaRequest criaMatricula = CriaMatriculaRequest.builder()
-        .idDoAluno((long)1).idDoCurso((long)1).build();
-        String enviaComoJson = mapper.writeValueAsString(criaMatricula);
+    @DisplayName("Deve retoranar BadRequest por tentar matricular o aluno 2x")
+    public void testeBadRequestMatricular() throws Exception{
+        Aluno aluno = Aluno.builder()
+        .id((long)1).nome("João").build();
+        alunoRepository.save(aluno);
 
-        mockMvc.perform(post("/matriculas")
-        .contentType(MediaType.APPLICATION_JSON)
-        .content(enviaComoJson))
-        .andExpect(status().isCreated());
-    }
-
-    @Test
-    @DisplayName("Testa se cai na Exception de não deixar um aluno entrar no mesmo curso 2 vezes")
-    public void testeDadoMatriculaRepetida_QuandoCriar_DeveRetornar400() throws Exception{
-        Matricula matriculaExistente = Matricula.builder()
-        .id((long)1).aluno(alunoRepository.findById((long)1).get())
-        .curso(cursoRepository.findById((long)1).get()).build();
-        matriculaRepository.save(matriculaExistente);
+        Curso curso = Curso.builder()
+        .id((long)1).nome("Ciências da Computação").build();
+        cursoRepository.save(curso);
 
         CriaMatriculaRequest criaMatricula = CriaMatriculaRequest.builder()
-        .idDoAluno((long)1).idDoCurso((long)1).build();
-        String enviaComoJson = mapper.writeValueAsString(criaMatricula);
+        .aluno_id(aluno.getId()).curso_id(curso.getId()).build();
+        String json = mapper.writeValueAsString(criaMatricula);
 
-        mockMvc.perform(post("/matriculas")
+        mockMvc.perform(MockMvcRequestBuilders.patch("/matriculas/matricular")
         .contentType(MediaType.APPLICATION_JSON)
-        .content(enviaComoJson))
+        .content(json));
+
+        mockMvc.perform(MockMvcRequestBuilders.patch("/matriculas/matricular")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(json))
         .andExpect(status().isBadRequest());
     }
 
     @Test
-    @DisplayName("Testa desmatricular um aluno de um curso")
-    public void testeDadoMatriculaValida_QuandoDeletar_DeveRetornar200() throws Exception{
-        Matricula matriculaExistente = Matricula.builder()
-        .id((long)1)
-        .aluno(alunoRepository.findById((long)1).get())
-        .curso(cursoRepository.findById((long)1).get())
-        .build();
-        matriculaRepository.save(matriculaExistente);
+    @DisplayName("Testa Desmatricular Aluno")
+    public void testeDesmatricularAluno() throws Exception{
+        Aluno aluno = Aluno.builder()
+        .id((long)1).nome("João").build();
+        alunoRepository.save(aluno);
 
-        mockMvc.perform(delete("/matriculas/1"))
-        .andExpect(status().isOk());
+        Curso curso = Curso.builder()
+        .id((long)1).nome("Biologia").build();
+        cursoRepository.save(curso);
+
+        CriaMatriculaRequest criaMatricula = CriaMatriculaRequest.builder()
+        .aluno_id(aluno.getId()).curso_id(curso.getId()).build();
+        String json = mapper.writeValueAsString(criaMatricula);
+
+        mockMvc.perform(MockMvcRequestBuilders.patch("/matriculas/matricular")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(json));
+
+        mockMvc.perform(MockMvcRequestBuilders.patch("/matriculas/desmatricular")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(json))
+        .andExpect(status().isOk())
+        .andExpect(content().string("João foi desmatriculado do curso Biologia."));
+    }
+
+    @Test
+    @DisplayName("Testa BadRequest ao tentar desmatricular alguém não matriculado")
+    public void testeBadRequestDesmatricular() throws Exception{
+        Aluno aluno = Aluno.builder()
+        .id((long)1).nome("João").build();
+        alunoRepository.save(aluno);
+
+        Curso curso = Curso.builder()
+        .id((long)1).nome("Ciências da Computação").build();
+        cursoRepository.save(curso);
+
+        CriaMatriculaRequest criaMatricula = CriaMatriculaRequest.builder()
+        .aluno_id(aluno.getId()).curso_id(curso.getId()).build();
+        String json = mapper.writeValueAsString(criaMatricula);
+
+        mockMvc.perform(MockMvcRequestBuilders.patch("/matriculas/desmatricular")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(json))
+        .andExpect(status().isBadRequest());
     }
 }

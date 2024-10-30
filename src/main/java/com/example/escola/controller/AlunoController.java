@@ -4,7 +4,6 @@ import org.springframework.http.ResponseEntity;
 
 import com.example.escola.dto.Request.AtualizaAlunoRequest;
 import com.example.escola.dto.Request.CriaAlunoRequest;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

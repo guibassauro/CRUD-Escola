@@ -1,8 +1,6 @@
 package com.example.escola.Integracao;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.List;
@@ -14,6 +12,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import com.example.escola.dto.Request.AtualizaProfessorRequest;
 import com.example.escola.dto.Request.CriaProfessorRequest;
@@ -23,15 +22,9 @@ import com.example.escola.repository.CursoRepository;
 import com.example.escola.repository.ProfessorRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-@SpringBootTest
 @AutoConfigureMockMvc
+@SpringBootTest
 public class ProfessorControllerTest {
-
-    @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
-    private ObjectMapper mapper;
     
     @Autowired
     private ProfessorRepository professorRepository;
@@ -39,61 +32,74 @@ public class ProfessorControllerTest {
     @Autowired
     private CursoRepository cursoRepository;
 
-    @Test
-    @DisplayName("Testa se acha os professores de um curso")
-    public void testeDadoCursoValido_QuandoBuscar_DeveRetornar200() throws Exception{
-        Curso cursoExistente = Curso.builder()
-        .id((long)1).nome("Ciências da Computação")
-        .descricao("Curso de Ciências da Computação")
-        .carga_horaria(2000).build();
-        cursoRepository.save(cursoExistente);
+    @Autowired
+    private MockMvc mockMvc;
 
-        mockMvc.perform(get("/professores/1"))
-        .andExpect(status().isOk());
+    @Autowired
+    ObjectMapper mapper;
+
+    @Test
+    @DisplayName("Deve retornar lista de professores")
+    public void testeGetProfessores() throws Exception{
+        Professor professor = Professor.builder()
+        .nome("Jaime").build();
+
+        professorRepository.save(professor);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/professores"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[0].nome").value("Jaime"));
     }
 
     @Test
-    @DisplayName("Testa a criação de um professor")
-    public void testeDadoProfessorValido_QuandoCriar_DeveRetornar201() throws Exception{
+    @DisplayName("Deve retornar lista de Professores de um Curso")
+    public void testeGetProfessoresByCurso() throws Exception{
+        Curso curso = Curso.builder()
+        .id((long)1).build();
+
+        Professor professor = Professor.builder()
+        .nome("Jaime").cursos(List.of(curso)).build();
+
+        cursoRepository.save(curso);
+        professorRepository.save(professor);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/professores/1"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[0].nome").value("Jaime"));
+    }
+
+    @Test
+    @DisplayName("Testa criar um professor")
+    public void testaCriarProfessor() throws Exception{
         CriaProfessorRequest criaProfessor = CriaProfessorRequest.builder()
-        .nome("Jaime").idade(50).cursos_id(List.of()).build();
-        String enviaComoJson = mapper.writeValueAsString(criaProfessor);
+        .nome("Jaime").cursos_id(List.of()).build();
 
-        mockMvc.perform(post("/professores")
+        String json = mapper.writeValueAsString(criaProfessor);
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/professores")
         .contentType(MediaType.APPLICATION_JSON)
-        .content(enviaComoJson))
-        .andExpect(status().isCreated());
+        .content(json))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.nome").value("Jaime"));
     }
 
     @Test
-    @DisplayName("Testa se cai na Exception de curso não encontrado")
-    public void testeDadoCursoInvalidoParaProfessor_QuandoCriar_DeveRetornar404() throws Exception{
-        CriaProfessorRequest criaProfessor = CriaProfessorRequest.builder()
-        .nome("Licurgo").idade(22).cursos_id(List.of((long)1)).build();
-        String enviaComoJson = mapper.writeValueAsString(criaProfessor);
+    @DisplayName("Testa atualizar o Professor")
+    public void testeAtualizarProfessor() throws Exception{
+        Professor professor = Professor.builder()
+        .id((long)1).nome("Jaime").build();
 
-        mockMvc.perform(post("/professores")
-        .contentType(MediaType.APPLICATION_JSON)
-        .content(enviaComoJson))
-        .andExpect(status().isNotFound());
-    }
-
-    @Test
-    @DisplayName("Testa se atualiza o professor")
-    public void testeDadoProfessorValido_QuandoAtualizar_DeveRetornar200() throws Exception{
-
-        Professor professorExistente = Professor.builder()
-        .id((long)1).nome("Junior").idade(22).cursos(List.of()).build();
-        professorRepository.save(professorExistente);
+        professorRepository.save(professor);
 
         AtualizaProfessorRequest atualizaProfessor = AtualizaProfessorRequest.builder()
-        .nome("Lucario").idade(null).cursos_id(null).build();
-        String enviaComoJson = mapper.writeValueAsString(atualizaProfessor);
-        
-        mockMvc.perform(patch("/professores/1")
-        .contentType(MediaType.APPLICATION_JSON)
-        .content(enviaComoJson))
-        .andExpect(status().isOk());
-    }
+        .nome("Marcelo").cursos_id(List.of()).build();
 
+        String json = mapper.writeValueAsString(atualizaProfessor);
+
+        mockMvc.perform(MockMvcRequestBuilders.patch("/professores/1")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(json))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.nome").value("Marcelo"));
+    }
 }

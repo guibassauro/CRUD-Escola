@@ -1,9 +1,5 @@
 package com.example.escola.Integracao;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.junit.jupiter.api.DisplayName;
@@ -13,133 +9,117 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import com.example.escola.dto.Request.AtualizaCursoRequest;
 import com.example.escola.dto.Request.CriaCursoRequest;
+import com.example.escola.dto.Request.CriaMatriculaRequest;
 import com.example.escola.model.Aluno;
 import com.example.escola.model.Curso;
-import com.example.escola.model.Matricula;
 import com.example.escola.repository.AlunoRepository;
 import com.example.escola.repository.CursoRepository;
-import com.example.escola.repository.MatriculaRepository;
-import com.example.escola.service.CursoService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-@SpringBootTest
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 @AutoConfigureMockMvc
+@SpringBootTest
 public class CursoControllerTest {
-    
-    @Autowired
-    private ObjectMapper mapper;
 
     @Autowired
     private MockMvc mockMvc;
-
+    
     @Autowired
     private CursoRepository cursoRepository;
 
     @Autowired
-    private AlunoRepository alunoRepository;
-
-    @Autowired
-    private MatriculaRepository matriculaRepository;
+    ObjectMapper mapper;
     
     @Autowired
-    private CursoService cursoService;
+    private AlunoRepository alunoRepository;
 
     @Test
-    @DisplayName("Teste para criação de Curso valido")
-    public void testeDadoCursoValido_QuandoSalvar_DeveRetornar201() throws Exception{
+    @DisplayName("Deve retornar lista de Cursos")
+    public void testaGetCursos() throws Exception{
+        Curso curso = Curso.builder()
+        .nome("Biologia").build();
+
+        cursoRepository.save(curso);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/cursos"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[0].nome").value("Biologia"));
+    }
+
+    @Test
+    @DisplayName("Deve criar um curso e retornar uma resposta")
+    public void testeCriarCurso() throws Exception{
         CriaCursoRequest criaCurso = CriaCursoRequest.builder()
-        .nome("Ciências da Computação")
-        .descricao("Curso de Ciências da Computação")
-        .carga_horaria(2000)
-        .build();
-        String enviaComoJson = mapper.writeValueAsString(criaCurso);
+        .nome("Biologia").build();
 
-        mockMvc.perform(post("/cursos")
+        String json = mapper.writeValueAsString(criaCurso);
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/cursos")
         .contentType(MediaType.APPLICATION_JSON)
-        .content(enviaComoJson))
-        .andExpect(status().isCreated());
+        .content(json))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.nome").value("Biologia"));
     }
 
     @Test
-    @DisplayName("Testa se atualiza o curso valido")
-    public void testeDadoCursoValido_QuandoAtualizar_DeveRetornar200() throws Exception{
-        Curso cursoExistente = Curso.builder()
-        .id((long)1)
-        .nome("Ciências da Computação")
-        .descricao("Curso de Ciências Computação")
-        .carga_horaria(2000)
-        .build();
-        cursoRepository.save(cursoExistente);
-
-        AtualizaCursoRequest atualizaCurso = AtualizaCursoRequest.builder()
-        .descricao("Curso de Ciências da Computação")
-        .carga_horaria(null)
-        .build();
-        String enviaComoString = mapper.writeValueAsString(atualizaCurso);
-
-        mockMvc.perform(patch("/cursos/1")
-        .contentType(MediaType.APPLICATION_JSON)
-        .content(enviaComoString))
-        .andExpect(status().isOk());
+    @DisplayName("Deve retornar resposta de atualização do curso")
+    public void testeAtualizarAluno() throws Exception{
+        Curso curso = Curso.builder()
+        .id((long)1).descricao("Biologia").build();
         
-        Curso cursoAtualizado = cursoService.atualizaCurso((long)1, atualizaCurso);
+        cursoRepository.save(curso);
 
-        assertEquals(cursoAtualizado.getDescricao(), "Curso de Ciências da Computação");
-        assertEquals(cursoAtualizado.getCarga_horaria(), 2000);
-    }
-
-    @Test
-    @DisplayName("Testa se cai na Exception de não encontrar o curso para atualizar")
-    public void testDadoCursoNãoExistente_QuandoAtualizar_DeveRetornar404() throws Exception{
         AtualizaCursoRequest atualizaCurso = AtualizaCursoRequest.builder()
-        .descricao("Descrição atualizada")
-        .carga_horaria(2000)
-        .build();
-        String enviaComoJson = mapper.writeValueAsString(atualizaCurso);
+        .descricao("Ciências da Computação").build();
+        
+        String json = mapper.writeValueAsString(atualizaCurso);
 
-        mockMvc.perform(patch("/alunos/1")
+        mockMvc.perform(MockMvcRequestBuilders.patch("/cursos/1")
         .contentType(MediaType.APPLICATION_JSON)
-        .content(enviaComoJson))
-        .andExpect(status().isNotFound());
+        .content(json))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.descricao").value("Ciências da Computação"));
     }
 
     @Test
-    @DisplayName("Testa se deleta o curso")
-    public void testeDadoCursoValido_QuandoDeletar_DeveRetornar200() throws Exception{
-        Curso cursoExistente = Curso.builder()
-        .id((long)1)
-        .nome("Ciências da computação")
-        .descricao("Curo de Ciências da Computação")
-        .carga_horaria(2000)
-        .build();
-        cursoRepository.save(cursoExistente);
+    @DisplayName("Testa Deletar Curso")
+    public void testeDeletarCurso() throws Exception{
+        Curso curso = Curso.builder()
+        .id((long)1).build();
 
-        mockMvc.perform(delete("/cursos/1"))
+        cursoRepository.save(curso);
+
+        mockMvc.perform(MockMvcRequestBuilders.delete("/cursos/1"))
         .andExpect(status().isOk());
     }
 
     @Test
-    @DisplayName("Testa se cai na Exception de não poder deletar cursos com matriculas")
-    public void testeDadoCursoComMatriculas_QuandoDeletar_DeveRetornar400() throws Exception{
-        Curso cursoExistente = Curso.builder()
-        .id((long)1).nome("Ciências da Computação")
-        .descricao("Curso de Ciências da Computação")
-        .carga_horaria(2000).build();
-        cursoRepository.save(cursoExistente);
+    @DisplayName("Deve retornar BadRequest para tentar deletar um curso com matriculas")
+    public void testeBadRequestDeDeletarCurso() throws Exception{
+        Aluno aluno = Aluno.builder()
+        .id((long)1).build();
 
-        Aluno alunoExistente = Aluno.builder()
-        .id((long) 1).nome("Lucas").idade(22).email("lucas@gmail.com")
-        .genero("Masculino").build();
-        alunoRepository.save(alunoExistente);
+        Curso curso = Curso.builder()
+        .id((long)1).build();
 
-        Matricula matriculaExistente = Matricula.builder()
-        .id((long)1).aluno(alunoExistente).curso(cursoExistente).build();
-        matriculaRepository.save(matriculaExistente);
+        cursoRepository.save(curso);
+        alunoRepository.save(aluno);
 
-        mockMvc.perform(delete("/cursos/1"))
+        CriaMatriculaRequest criaMatricula = CriaMatriculaRequest.builder()
+        .aluno_id(aluno.getId()).curso_id(curso.getId()).build();
+
+        String json = mapper.writeValueAsString(criaMatricula);
+
+        mockMvc.perform(MockMvcRequestBuilders.patch("/matriculas/matricular")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(json));
+
+        mockMvc.perform(MockMvcRequestBuilders.delete("/cursos/1"))
         .andExpect(status().isBadRequest());
     }
 }

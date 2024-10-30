@@ -11,39 +11,39 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 public interface MatriculaController {
     
     @Operation(
-        summary = "Acha Matriculas",
-        description = "Retorna uma lista com todas as matriculas",
+        summary = "Lista Matriculas",
+        description = "Lista todas as matriculas do banco",
         responses = {
-            @ApiResponse(responseCode = "200", description = "Sucedeu em retornar a lista")
+            @ApiResponse(responseCode = "200", description = "Sucedeu em listar todos as matriculas")
         }
     )
-    ResponseEntity<Object> achaTodasAsMatriculas();
+    ResponseEntity<Object> listaMatriculas();
 
     @Operation(
         summary = "Matricula Aluno",
-        description = "Cria uma matricula para ligar aluno a curso",
+        description = "Matricula aluno em curso",
         parameters = {
-            @Parameter(name = "criaMatricula", description = "Corpo com id do aluno e do curso para gerar a matricula")
+            @Parameter(name = "criaMatricula", description = "Corpo JSON com ID do aluno e curso")
         },
         responses = {
-            @ApiResponse(responseCode = "201", description = "Sucedeu em criar a matricula"),
-            @ApiResponse(responseCode = "400", description = "Não permitiu matricular um aluno duas vezes no mesmo curso"),
-            @ApiResponse(responseCode = "404", description = "Aluno não encontrado no banco de dados"),
-            @ApiResponse(responseCode = "404", description = "Curso não encontrado no banco de dados")
+            @ApiResponse(responseCode = "200", description = "Sucedeu em matricular o aluno no curso"),
+            @ApiResponse(responseCode = "400", description = "Tentou matricular um aluno que já está matriculado neste curso"),
+            @ApiResponse(responseCode = "404", description = "Não encontrou aluno ou curso por Id")
         }
     )
     ResponseEntity<Object> matriculaAluno(CriaMatriculaRequest criaMatricula);
 
     @Operation(
-        summary = "Desmatricula aluno",
-        description = "Deleta matricula do banco, deletando relação entre aluno e curso",
+        summary = "Desmatricula Aluno",
+        description = "Desmatricula Aluno por ids",
         parameters = {
-            @Parameter(name = "matricula_id", description = "Id da matricula a ser deletada")
+            @Parameter(name = "criaMatricula", description = "Corpo JSON com ID de aluno e curso")
         },
         responses = {
-            @ApiResponse(responseCode = "200", description = "Sucedeu em deletar a matricula do banco"),
-            @ApiResponse(responseCode = "404", description = "Matricula não encontrada")
+            @ApiResponse(responseCode = "200", description = "Sucedeu em desmatricular o aluno"),
+            @ApiResponse(responseCode = "400", description = "Aluno não estava matriculado no curso"),
+            @ApiResponse(responseCode = "404", description = "Não encontrou aluno ou curso")
         }
     )
-    ResponseEntity<Object> desmatriculaAluno(Long matricula_id);
+    ResponseEntity<Object> desmatriculaAluno(CriaMatriculaRequest criaMatricula);
 }

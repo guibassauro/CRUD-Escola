@@ -22,11 +22,10 @@ import com.example.escola.dto.Response.AtualizarAlunoResponse;
 import com.example.escola.dto.Response.CriaAlunoResponse;
 import com.example.escola.model.Aluno;
 import com.example.escola.model.Curso;
-import com.example.escola.model.Matricula;
 import com.example.escola.repository.AlunoRepository;
+import com.example.escola.repository.CursoRepository;
 import com.example.escola.service.impl.AlunoServiceImpl;
 import com.example.escola.service.impl.CursoServiceImpl;
-import com.example.escola.service.impl.MatriculaServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Testar Aluno Service")
@@ -36,10 +35,10 @@ public class AlunoServiceTest {
     private AlunoRepository alunoRepository;
 
     @Mock
-    private CursoServiceImpl cursoService;
+    private CursoRepository cursoRepository;
 
     @Mock
-    private MatriculaServiceImpl matriculaService;
+    private CursoServiceImpl cursoService;
 
     @InjectMocks
     private AlunoServiceImpl alunoService;
@@ -73,17 +72,15 @@ public class AlunoServiceTest {
         Curso cursoExistente = Curso.builder()
         .id((long)1).nome("Biologia").build();
 
-        Matricula matriculaExistente = Matricula.builder()
-        .id((long)1).aluno(alunoExistente).curso(cursoExistente).build();
+        alunoExistente.setCursos(List.of(cursoExistente));
+        cursoExistente.setAlunos(List.of(alunoExistente));
 
-        when(cursoService.achaCursoPorId((long)1)).thenReturn(Optional.of(cursoExistente));
-        when(matriculaService.achaTodasPorCursoId((long)1)).thenReturn(List.of(matriculaExistente));
-        
-        List<Aluno> listaDeAlunos = alunoService.achaTodosOsAlunosDeUmCurso((long)1);
+        when(cursoService.achaCursoPorId(cursoExistente.getId())).thenReturn(Optional.of(cursoExistente));
+        when(alunoService.achaTodosOsAlunosDeUmCurso(cursoExistente.getId())).thenReturn(List.of(alunoExistente));
 
-        assertEquals(listaDeAlunos.get(0).getNome(), "Lucas");
-        verify(cursoService).achaCursoPorId((long)1);
-        verify(matriculaService).achaTodasPorCursoId((long)1);
+        List<Aluno> alunos = alunoService.achaTodosOsAlunosDeUmCurso((long)1);
+
+        assertEquals("Lucas", alunos.get(0).getNome());
     }
 
     @Test
@@ -200,7 +197,6 @@ public class AlunoServiceTest {
         alunoService.deletaAluno((long)1);
 
         verify(alunoRepository).findById((long)1);
-        verify(matriculaService).achaTodosPorAlunoId((long)1);
         verify(alunoRepository).deleteById((long)1);
     }
 
@@ -226,11 +222,12 @@ public class AlunoServiceTest {
         Aluno alunoExistente = Aluno.builder()
         .id((long)1).build();
 
-        Matricula matriculaExistente = Matricula.builder()
-        .id((long)1).aluno(alunoExistente).build();
+        Curso cursoExistente = Curso.builder()
+        .id((long)1).alunos(List.of(alunoExistente)).build();
+
+        alunoExistente.setCursos(List.of(cursoExistente));
 
         when(alunoRepository.findById((long)1)).thenReturn(Optional.of(alunoExistente));
-        when(matriculaService.achaTodosPorAlunoId((long)1)).thenReturn(List.of(matriculaExistente));
 
         try{
             alunoService.deletaAluno(alunoExistente.getId());
@@ -238,7 +235,6 @@ public class AlunoServiceTest {
         } catch(Exception e){
             assertEquals("Você não pode deletar um aluno com matriculas em andamento", e.getMessage());
             verify(alunoRepository).findById((long)1);
-            verify(matriculaService).achaTodosPorAlunoId((long)1);
         }
     }
 }

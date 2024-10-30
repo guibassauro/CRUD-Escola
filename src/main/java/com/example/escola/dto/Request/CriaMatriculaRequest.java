@@ -7,6 +7,6 @@ import lombok.Value;
 @Builder
 public class CriaMatriculaRequest {
     
-    private Long idDoAluno;
-    private Long idDoCurso;
+    private Long aluno_id;
+    private Long curso_id;
 }

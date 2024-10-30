@@ -1,5 +1,10 @@
 package com.example.escola.dto.Response;
 
+import java.util.List;
+
+import com.example.escola.model.Curso;
+
+
 import lombok.Builder;
 import lombok.Value;
 
@@ -11,4 +16,5 @@ public class CriaAlunoResponse {
     private String nome;
     private String email;
     private int idade;
+    private List<Curso> cursos;
 }
